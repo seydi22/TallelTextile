@@ -1,15 +1,40 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../utills/db");
 
 async function getSingleProductImages(request, response) {
-  const { id } = request.params;
-  const images = await prisma.image.findMany({
-    where: { productID: id },
-  });
-  if (!images) {
-    return response.json({ error: "Images not found" }, { status: 404 });
+  try {
+    const { id } = request.params;
+    
+    // Validation: vérifier que l'ID est fourni et valide
+    if (!id || id === 'undefined' || id === 'null') {
+      console.error("❌ Invalid product ID provided:", id);
+      return response.status(400).json({ 
+        error: "Product ID is required",
+        details: "A valid product ID must be provided"
+      });
+    }
+
+    // Vérifier que l'ID est un ObjectID valide (24 caractères hexadécimaux)
+    if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+      console.error("❌ Invalid ObjectID format:", id);
+      return response.status(400).json({ 
+        error: "Invalid product ID format",
+        details: "Product ID must be a valid MongoDB ObjectID (24 hex characters)"
+      });
+    }
+
+    const images = await prisma.image.findMany({
+      where: { productID: id },
+    });
+    
+    // Retourner un tableau vide si aucune image n'est trouvée (pas une erreur)
+    return response.json(images || []);
+  } catch (error) {
+    console.error("❌ Error fetching product images:", error);
+    return response.status(500).json({ 
+      error: "Error fetching product images",
+      details: error.message 
+    });
   }
-  return response.json(images);
 }
 
 async function createImage(request, response) {

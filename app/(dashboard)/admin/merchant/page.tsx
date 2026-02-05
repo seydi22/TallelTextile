@@ -29,9 +29,22 @@ export default function MerchantPage() {
       }
       const data = await response.json();
       setMerchants(data);
-    } catch (error) {
-      console.error("Error fetching merchants:", error);
-      toast.error("Failed to load merchants");
+    } catch (error: any) {
+      // Gestion améliorée des erreurs
+      const errorMessage = error?.message || String(error);
+      
+      // Détecter les erreurs de connexion au backend (utilise la propriété isConnectionError de apiClient)
+      if (error?.isConnectionError || errorMessage.includes('fetch failed') || errorMessage.includes('Failed to fetch') || errorMessage.includes('ECONNREFUSED') || errorMessage.includes('Backend API non disponible')) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('⚠️ Backend API non disponible');
+          console.info('💡 Démarrez le backend avec: cd server && node app.js');
+        }
+        toast.error("Le serveur backend n'est pas disponible. Veuillez démarrer le serveur.");
+      } else {
+        console.error("Error fetching merchants:", error);
+        toast.error("Échec du chargement des marchands");
+      }
+      setMerchants([]); // S'assurer que merchants est un tableau vide en cas d'erreur
     } finally {
       setLoading(false);
     }
@@ -49,7 +62,7 @@ export default function MerchantPage() {
           <h1 className="text-3xl font-bold">Merchants</h1>
           <Link
             href="/admin/merchant/new"
-            className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition"
+            className="bg-brand-secondary text-white px-6 py-2 rounded-md hover:bg-brand-primary transition-colors duration-300"
           >
             Add Merchant
           </Link>
@@ -89,13 +102,13 @@ export default function MerchantPage() {
                     <td className="py-4">
                       <Link
                         href={`/admin/merchant/${merchant.id}`}
-                        className="text-blue-500 hover:underline mr-3"
+                        className="text-brand-primary hover:underline mr-3"
                       >
                         View
                       </Link>
                       <Link
                         href={`/admin/merchant/${merchant.id}`}
-                        className="text-blue-500 hover:underline"
+                        className="text-brand-primary hover:underline"
                       >
                         Edit
                       </Link>

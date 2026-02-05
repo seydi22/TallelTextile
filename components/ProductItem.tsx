@@ -1,69 +1,74 @@
 // *********************
-// Role of the component: Product item component 
+// Role of the component: Premium product item card
 // Name of the component: ProductItem.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <ProductItem product={product} color={color} />
-// Input parameters: { product: Product; color: string; }
-// Output: Product item component that contains product image, title, link to the single product page, price, button...
+// Developer: Aleksandar Kuzmanovic (Updated by Gemini for TALLEL TEXTILE)
+// Version: 2.0
+// Component call: <ProductItem product={product} />
+// Input parameters: { product: Product; }
+// Output: A minimalist product card with brand styles and a hover effect to show the "Add to cart" button.
 // *********************
 
+"use client";
 import Image from "next/image";
 import React from "react";
 import Link from "next/link";
-
 import { sanitize } from "@/lib/sanitize";
+import { formatPriceMRU } from "@/lib/formatPrice";
+import { getImageUrl } from "@/utils/imageUtils";
+import { useProductStore } from "@/app/_zustand/store";
+import toast from "react-hot-toast";
 
-const ProductItem = ({
-  product,
-  color,
-}: {
-  product: Product;
-  color: string;
-}) => {
+const ProductItem = ({ product, color }: { product: Product; color?: string }) => {
+  const { addToCart, calculateTotals } = useProductStore();
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); // Empêcher la navigation vers la page produit
+    e.stopPropagation(); // Empêcher la propagation de l'événement
+    
+    addToCart({
+      id: product?.id.toString(),
+      title: product?.title,
+      price: product?.price,
+      image: product?.mainImage,
+      amount: 1,
+    });
+    calculateTotals();
+    toast.success(`${sanitize(product?.title)} a été ajouté au panier.`);
+  };
+
   return (
-    <div className="flex flex-col items-center gap-y-2">
-      <Link href={`/product/${product.slug}`}>
-        <Image
-          src={
-            product.mainImage
-              ? `/${product.mainImage}`
-              : "/product_placeholder.jpg"
-          }
-          width="0"
-          height="0"
-          sizes="100vw"
-          className="w-auto h-[300px]"
-          alt={sanitize(product?.title) || "Product image"}
-        />
+    <div className="product-card group">
+      <Link href={`/product/${product.slug}`} className="flex-grow">
+        <div className="product-image-wrapper">
+          <Image
+            src={getImageUrl(product.mainImage)}
+            fill
+            style={{ objectFit: "cover" }}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            alt={sanitize(product?.title) || "Product image"}
+            className="product-image group-hover:scale-110"
+            priority={false}
+          />
+        </div>
+        <div className="product-info">
+          <h3 className="product-title">
+            {sanitize(product.title)}
+          </h3>
+          <p className="product-price">
+            {formatPriceMRU(product.price)}
+          </p>
+        </div>
       </Link>
-      <Link
-        href={`/product/${product.slug}`}
-        className={
-          color === "black"
-            ? `text-xl text-black font-normal mt-2 uppercase`
-            : `text-xl text-white font-normal mt-2 uppercase`
-        }
-      >
-        {sanitize(product.title)}
-      </Link>
-      <p
-        className={
-          color === "black"
-            ? "text-lg text-black font-semibold"
-            : "text-lg text-white font-semibold"
-        }
-      >
-        ${product.price}
-      </p>
-
-  
-      <Link
-        href={`/product/${product?.slug}`}
-        className="block flex justify-center items-center w-full uppercase bg-white px-0 py-2 text-base border border-black border-gray-300 font-bold text-blue-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
-      >
-        <p>View product</p>
-      </Link>
+      <div className="px-4 pb-4 md:px-6 md:pb-6">
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button 
+            onClick={handleAddToCart}
+            className="btn btn-secondary w-full btn-md bg-brand-secondary text-white hover:bg-brand-primary transition-colors duration-300"
+          >
+            Ajouter au panier
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

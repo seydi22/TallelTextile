@@ -10,6 +10,7 @@
 
 "use client";
 import React, { useState } from 'react'
+import { formatPriceMRU } from "@/lib/formatPrice";
 
 interface RangeProps {
     min: number;
@@ -28,7 +29,7 @@ const Range = ({ min, max, priceValue, setInputCategory } : RangeProps) => {
   return (
     <div>
         <input type="range" min={min} max={max} value={priceValue} className="range range-warning" />
-        <span>{ `Max price: $${currentRangeValue}` }</span>
+        <span>{ `Prix max: ${formatPriceMRU(currentRangeValue)}` }</span>
     </div>
   )
 }

@@ -9,7 +9,7 @@ export async function requireAdmin() {
     redirect("/login");
   }
   
-  if ((session as any)?.user?.role !== "admin") {
+  if (session.user.role !== "admin") {
     redirect("/");
   }
   
@@ -18,6 +18,5 @@ export async function requireAdmin() {
 
 export async function isAdmin(): Promise<boolean> {
   const session = await getServerSession(authOptions);
-  return (session as any)?.user?.role === "admin";
+  return session?.user?.role === "admin";
 }
-

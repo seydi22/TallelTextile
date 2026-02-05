@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, use } from "react";
+import React, { useEffect, useState, use, useCallback } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -48,7 +48,7 @@ export default function MerchantDetailPage({
 
   const router = useRouter();
 
-  const fetchMerchant = async () => {
+  const fetchMerchant = React.useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiClient.get(`/api/merchants/${id}`);
@@ -77,11 +77,11 @@ export default function MerchantDetailPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, router]);
 
   useEffect(() => {
     fetchMerchant();
-  }, [id]); 
+  }, [fetchMerchant]); 
 
 const handleInputChange = (
     e: React.ChangeEvent<
@@ -189,7 +189,7 @@ const handleInputChange = (
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
                 required
               />
             </div>
@@ -200,7 +200,7 @@ const handleInputChange = (
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
               />
             </div>
             <div>
@@ -210,7 +210,7 @@ const handleInputChange = (
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
               />
             </div>
             <div>
@@ -219,7 +219,7 @@ const handleInputChange = (
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
               >
                 <option value="ACTIVE">Active</option>
                 <option value="INACTIVE">Inactive</option>
@@ -232,7 +232,7 @@ const handleInputChange = (
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
               />
             </div>
             <div className="md:col-span-2">
@@ -247,7 +247,7 @@ const handleInputChange = (
             <div className="md:col-span-2">
               <button 
                 type="submit"
-                className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition"
+                className="bg-brand-secondary text-white px-6 py-2 rounded-md hover:bg-brand-primary transition-colors duration-300"
               >
                 Save Changes
               </button>
@@ -271,12 +271,12 @@ const handleInputChange = (
                 {merchant.products.map((product) => (
                   <tr key={product.id} className="border-b hover:bg-gray-50">
                     <td className="py-4">{product.title}</td>
-                    <td className="py-4">${product.price / 100}</td>
+                    <td className="py-4">{formatPriceMRU(product.price)}</td>
                     <td className="py-4">{product.inStock}</td>
                     <td className="py-4">
                       <Link
                         href={`/admin/products/${product.id}`}
-                        className="text-blue-500 hover:underline"
+                        className="text-brand-primary hover:underline"
                       >
                         View
                       </Link>

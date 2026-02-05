@@ -1,108 +1,72 @@
 export const categoryMenuList = [
   {
     id: 1,
-    title: "Smart Phones",
-    src: "/smart phone icon.png",
-    href: "/shop/smart-phones"
+    title: "Homme",
+    src: "/randomProductImage.svg",
+    href: "/shop/homme"
   },
   {
     id: 2,
-    title: "Tablets",
-    src: "/tablet icon.png",
-    href: "/shop/tablets"
+    title: "Enfant",
+    src: "/randomProductImage.svg",
+    href: "/shop/enfant"
   },
   {
     id: 3,
-    title: "Mouses",
-    src: "/mouse icon.png",
-    href: "/shop/mouses"
+    title: "Chaussure Homme",
+    src: "/randomProductImage.svg",
+    href: "/shop/chaussure-homme"
   },
   {
     id: 4,
-    title: "Cameras",
-    src: "/camera icon.png",
-    href: "/shop/cameras"
-  },
-  {
-    id: 5,
-    title: "Smart Watches",
-    src: "/smart watch.png",
-    href: "/shop/watches"
-  },
-  {
-    id: 6,
-    title: "Laptops",
-    src: "/laptop icon.png",
-    href: "/shop/laptops"
-  },
-  {
-    id: 7,
-    title: "PCs",
-    src: "/pc icon.png",
-    href: "/shop/computers"
-  },
-  {
-    id: 8,
-    title: "Printers",
-    src: "/printers icon.png",
-    href: "/shop/printers"
-  },
-  {
-    id: 9,
-    title: "Earbuds",
-    src: "/ear buds icon.png",
-    href: "/shop/earbuds"
-  },
-  {
-    id: 10,
-    title: "Head Phones",
-    src: "/headphone icon.png",
-    href: "/shop/headphones"
+    title: "Tissu Bazin",
+    src: "/randomProductImage.svg",
+    href: "/shop/tissu-bazin"
   },
 ];
 
 export const incentives = [
   {
-    name: "Free Shipping",
+    name: "Livraison gratuite",
     description:
-      "Our shipping is completely free and that is completely good for our customers.",
+      "Notre livraison est entièrement gratuite et c'est un avantage pour nos clients.",
     imageSrc: "/shipping icon.png",
   },
   {
-    name: "24/7 Customer Support",
+    name: "Support client 24/7",
     description:
-      "Our support is working all day and night to answer any question you have.",
+      "Notre support est disponible toute la journée pour répondre à toutes vos questions.",
     imageSrc: "/support icon.png",
   },
   {
-    name: "Fast Shopping Cart",
+    name: "Panier d'achat rapide",
     description:
-      "We have super fast shopping experience and you will enjoy it.",
+      "Nous avons une expérience d'achat ultra-rapide et vous l'apprécierez.",
     imageSrc: "/fast shopping icon.png",
   },
 ];
 
 export const navigation = {
   sale: [
-    { name: "Discounts", href: "#" },
-    { name: "News", href: "#" },
-    { name: "Register Discounts", href: "#" },
+    { name: "Promotions", href: "#" },
+    { name: "Nouveautés", href: "#" },
+    { name: "S'inscrire aux promotions", href: "#" },
   ],
   about: [
-    { name: "About Singitronic", href: "#" },
-    { name: "Work With Us", href: "#" },
-    { name: "Company Profile", href: "#" },
+    { name: "À propos de Tallel Textile", href: "#" },
+    { name: "Travaillez avec nous", href: "#" },
+    { name: "Profil de l'entreprise", href: "#" },
   ],
   buy: [
-    { name: "Singitronic Loyalty Card", href: "#" },
-    { name: "Terms Of Use", href: "#" },
-    { name: "Privacy Policy", href: "#" },
-    { name: "Complaints", href: "#" },
-    { name: "Partners", href: "#" },
+    { name: "Carte de fidélité Talel Textile", href: "#" },
+    { name: "Conditions d'utilisation", href: "#" },
+    { name: "Politique de confidentialité", href: "#" },
+    { name: "Réclamations", href: "#" },
+    { name: "Partenaires", href: "#" },
   ],
   help: [
     { name: "Contact", href: "#" },
-    { name: "How to Buy at Singitronic", href: "#" },
+    { name: "Comment acheter sur Talel Textile", href: "#" },
     { name: "FAQ", href: "#" },
   ],
 };

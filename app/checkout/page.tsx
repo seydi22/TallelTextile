@@ -3,13 +3,15 @@ import { SectionTitle } from "@/components";
 import { useProductStore } from "../_zustand/store";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api";
+import { formatPriceMRU } from "@/lib/formatPrice";
+import { getImageUrl } from "@/utils/imageUtils";
 
 const CheckoutPage = () => {
-  const { data: session } = useSession();
+  
   const [checkoutForm, setCheckoutForm] = useState({
     name: "",
     lastname: "",
@@ -32,56 +34,56 @@ const CheckoutPage = () => {
   const validateForm = () => {
     const errors: string[] = [];
     
-    // Name validation
+    // Validation du prénom
     if (!checkoutForm.name.trim() || checkoutForm.name.trim().length < 2) {
-      errors.push("Name must be at least 2 characters");
+      errors.push("Le prénom doit contenir au moins 2 caractères");
     }
     
-    // Lastname validation
+    // Validation du nom
     if (!checkoutForm.lastname.trim() || checkoutForm.lastname.trim().length < 2) {
-      errors.push("Lastname must be at least 2 characters");
+      errors.push("Le nom doit contenir au moins 2 caractères");
     }
     
-    // Email validation
+    // Validation de l'email
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     if (!checkoutForm.email.trim() || !emailRegex.test(checkoutForm.email.trim())) {
-      errors.push("Please enter a valid email address");
+      errors.push("Veuillez entrer une adresse email valide");
     }
     
-    // Phone validation (must be at least 10 digits)
+    // Validation du téléphone (doit contenir au moins 10 chiffres)
     const phoneDigits = checkoutForm.phone.replace(/[^0-9]/g, '');
     if (!checkoutForm.phone.trim() || phoneDigits.length < 10) {
-      errors.push("Phone number must be at least 10 digits");
+      errors.push("Le numéro de téléphone doit contenir au moins 10 chiffres");
     }
     
-    // Company validation
+    // Validation de l'entreprise
     if (!checkoutForm.company.trim() || checkoutForm.company.trim().length < 5) {
-      errors.push("Company must be at least 5 characters");
+      errors.push("L'entreprise doit contenir au moins 5 caractères");
     }
     
-    // Address validation
+    // Validation de l'adresse
     if (!checkoutForm.adress.trim() || checkoutForm.adress.trim().length < 5) {
-      errors.push("Address must be at least 5 characters");
+      errors.push("L'adresse doit contenir au moins 5 caractères");
     }
     
-    // Apartment validation (updated to 1 character minimum)
+    // Validation de l'appartement (minimum 1 caractère)
     if (!checkoutForm.apartment.trim() || checkoutForm.apartment.trim().length < 1) {
-      errors.push("Apartment is required");
+      errors.push("L'appartement est requis");
     }
     
-    // City validation
+    // Validation de la ville
     if (!checkoutForm.city.trim() || checkoutForm.city.trim().length < 5) {
-      errors.push("City must be at least 5 characters");
+      errors.push("La ville doit contenir au moins 5 caractères");
     }
     
-    // Country validation
+    // Validation du pays
     if (!checkoutForm.country.trim() || checkoutForm.country.trim().length < 5) {
-      errors.push("Country must be at least 5 characters");
+      errors.push("Le pays doit contenir au moins 5 caractères");
     }
     
-    // Postal code validation
+    // Validation du code postal
     if (!checkoutForm.postalCode.trim() || checkoutForm.postalCode.trim().length < 3) {
-      errors.push("Postal code must be at least 3 characters");
+      errors.push("Le code postal doit contenir au moins 3 caractères");
     }
     
     return errors;
@@ -108,17 +110,17 @@ const CheckoutPage = () => {
     );
 
     if (missingFields.length > 0) {
-      toast.error("Please fill in all required fields");
+      toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
     if (products.length === 0) {
-      toast.error("Your cart is empty");
+      toast.error("Votre panier est vide");
       return;
     }
 
     if (total <= 0) {
-      toast.error("Invalid order total");
+      toast.error("Le total de la commande est invalide");
       return;
     }
 
@@ -129,21 +131,6 @@ const CheckoutPage = () => {
       
       // Get user ID if logged in
       let userId = null;
-      if (session?.user?.email) {
-        try {
-          console.log("🔍 Getting user ID for logged-in user:", session.user.email);
-          const userResponse = await apiClient.get(`/api/users/email/${session.user.email}`);
-          if (userResponse.ok) {
-            const userData = await userResponse.json();
-            userId = userData.id;
-            console.log("✅ Found user ID:", userId);
-          } else {
-            console.log("❌ Could not find user with email:", session.user.email);
-          }
-        } catch (userError) {
-          console.log("⚠️  Error getting user ID:", userError);
-        }
-      }
       
       // Prepare the order data
       const orderData = {
@@ -184,26 +171,26 @@ const CheckoutPage = () => {
           const errorData = JSON.parse(errorText);
           console.error("Parsed error data:", errorData);
           
-          // Handle different error types
+          // Gérer les différents types d'erreurs
           if (response.status === 409) {
-            // Duplicate order error
-            toast.error(errorData.details || errorData.error || "Duplicate order detected");
-            return; // Don't throw, just return to stop execution
+            // Erreur de commande dupliquée
+            toast.error(errorData.details || errorData.error || "Commande en double détectée");
+            return; // Ne pas lancer d'exception, juste retourner pour arrêter l'exécution
           } else if (errorData.details && Array.isArray(errorData.details)) {
-            // Validation errors
+            // Erreurs de validation
             errorData.details.forEach((detail: any) => {
               toast.error(`${detail.field}: ${detail.message}`);
             });
           } else if (typeof errorData.details === 'string') {
-            // Single error message in details
+            // Message d'erreur unique dans details
             toast.error(errorData.details);
           } else {
-            // Fallback error message
-            toast.error(errorData.error || "Order creation failed");
+            // Message d'erreur de secours
+            toast.error(errorData.error || "Échec de la création de la commande");
           }
         } catch (parseError) {
-          console.error("Could not parse error as JSON:", parseError);
-          toast.error("Order creation failed. Please try again.");
+          console.error("Impossible de parser l'erreur en JSON:", parseError);
+          toast.error("Échec de la création de la commande. Veuillez réessayer.");
         }
         
         return; // Stop execution instead of throwing
@@ -216,9 +203,9 @@ const CheckoutPage = () => {
       console.log("🆔 Extracted order ID:", orderId);
 
       if (!orderId) {
-        console.error("❌ Order ID is missing or falsy!");
-        console.error("Full response data:", JSON.stringify(data, null, 2));
-        throw new Error("Order ID not received from server");
+        console.error("❌ L'ID de commande est manquant ou invalide !");
+        console.error("Données complètes de la réponse:", JSON.stringify(data, null, 2));
+        throw new Error("ID de commande non reçu du serveur");
       }
 
       console.log("✅ Order ID validation passed, proceeding with product addition...");
@@ -261,36 +248,36 @@ const CheckoutPage = () => {
         console.log('Note: Could not trigger notification refresh');
       }
       
-      toast.success("Order created successfully! You will be contacted for payment.");
+      toast.success("Commande créée avec succès ! Vous serez contacté pour le paiement.");
       setTimeout(() => {
         router.push("/");
       }, 1000);
     } catch (error: any) {
       console.error("💥 Error in makePurchase:", error);
       
-      // Handle server validation errors
+      // Gérer les erreurs de validation du serveur
       if (error.response?.status === 400) {
-        console.log(" Handling 400 error...");
+        console.log(" Gestion de l'erreur 400...");
         try {
           const errorData = await error.response.json();
-          console.log("Error data:", errorData);
+          console.log("Données d'erreur:", errorData);
           if (errorData.details && Array.isArray(errorData.details)) {
-            // Show specific validation errors
+            // Afficher les erreurs de validation spécifiques
             errorData.details.forEach((detail: any) => {
               toast.error(`${detail.field}: ${detail.message}`);
             });
           } else {
-            toast.error(errorData.error || "Validation failed");
+            toast.error(errorData.error || "Échec de la validation");
           }
         } catch (parseError) {
-          console.error("Failed to parse error response:", parseError);
-          toast.error("Validation failed");
+          console.error("Échec du parsing de la réponse d'erreur:", parseError);
+          toast.error("Échec de la validation");
         }
       } else if (error.response?.status === 409) {
-        toast.error("Duplicate order detected. Please wait before creating another order.");
+        toast.error("Commande en double détectée. Veuillez patienter avant de créer une autre commande.");
       } else {
-        console.log("🔍 Handling generic error...");
-        toast.error("Failed to create order. Please try again.");
+        console.log("🔍 Gestion de l'erreur générique...");
+        toast.error("Échec de la création de la commande. Veuillez réessayer.");
       }
     } finally {
       setIsSubmitting(false);
@@ -334,72 +321,69 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     if (products.length === 0) {
-      toast.error("You don't have items in your cart");
+      toast.error("Votre panier est vide");
       router.push("/cart");
     }
-  }, []);
+  }, [products.length, router]);
 
   return (
-    <div className="bg-white">
+    <div className="bg-brand-bg-primary min-h-screen">
       <SectionTitle title="Checkout" path="Home | Cart | Checkout" />
       
-      <div className="hidden h-full w-1/2 bg-white lg:block" aria-hidden="true" />
-      <div className="hidden h-full w-1/2 bg-gray-50 lg:block" aria-hidden="true" />
-
-      <main className="relative mx-auto grid max-w-screen-2xl grid-cols-1 gap-x-16 lg:grid-cols-2 lg:px-8 xl:gap-x-48">
-        <h1 className="sr-only">Order information</h1>
+      <main className="relative mx-auto grid max-w-screen-2xl grid-cols-1 gap-x-16 lg:grid-cols-2 lg:px-8 xl:gap-x-48 py-12">
+        <h1 className="sr-only">Informations de commande</h1>
 
         {/* Order Summary */}
         <section
           aria-labelledby="summary-heading"
-          className="bg-gray-50 px-4 pb-10 pt-16 sm:px-6 lg:col-start-2 lg:row-start-1 lg:bg-transparent lg:px-0 lg:pb-16"
+          className="bg-brand-bg-secondary px-4 pb-10 pt-16 sm:px-6 lg:col-start-2 lg:row-start-1 lg:px-0 lg:pb-16 shadow-sm rounded-lg"
         >
           <div className="mx-auto max-w-lg lg:max-w-none">
-            <h2 id="summary-heading" className="text-lg font-medium text-gray-900">
-              Order summary
+            <h2 id="summary-heading" className="text-2xl font-serif font-semibold text-brand-text-primary mb-6">
+              Résumé de la commande
             </h2>
 
             <ul
               role="list"
-              className="divide-y divide-gray-200 text-sm font-medium text-gray-900"
+              className="divide-y divide-gray-200 text-sm font-medium text-brand-text-primary mb-6"
             >
               {products.map((product) => (
                 <li key={product?.id} className="flex items-start space-x-4 py-6">
                   <Image
-                    src={product?.image ? `/${product?.image}` : "/product_placeholder.jpg"}
+                    src={getImageUrl(product?.image)}
                     alt={product?.title}
                     width={80}
                     height={80}
                     className="h-20 w-20 flex-none rounded-md object-cover object-center"
                   />
                   <div className="flex-auto space-y-1">
-                    <h3>{product?.title}</h3>
-                    <p className="text-gray-500">x{product?.amount}</p>
+                    <h3 className="font-serif text-brand-text-primary">{product?.title}</h3>
+                    <p className="text-brand-text-secondary">x{product?.amount}</p>
                   </div>
-                  <p className="flex-none text-base font-medium">
-                    ${product?.price}
+                  <p className="flex-none text-base font-medium text-brand-primary">
+                    {formatPriceMRU(product?.price)}
                   </p>
                 </li>
               ))}
             </ul>
 
-            <dl className="hidden space-y-6 border-t border-gray-200 pt-6 text-sm font-medium text-gray-900 lg:block">
+            <dl className="space-y-4 border-t border-gray-200 pt-6 text-sm font-medium text-brand-text-primary">
               <div className="flex items-center justify-between">
-                <dt className="text-gray-600">Subtotal</dt>
-                <dd>${total}</dd>
+                <dt className="text-brand-text-secondary">Sous-total</dt>
+                <dd className="text-brand-text-primary">{formatPriceMRU(total)}</dd>
               </div>
               <div className="flex items-center justify-between">
-                <dt className="text-gray-600">Shipping</dt>
-                <dd>$5</dd>
+                <dt className="text-brand-text-secondary">Livraison</dt>
+                <dd className="text-brand-text-primary">{formatPriceMRU(5)}</dd>
               </div>
               <div className="flex items-center justify-between">
-                <dt className="text-gray-600">Taxes</dt>
-                <dd>${total / 5}</dd>
+                <dt className="text-brand-text-secondary">Taxes</dt>
+                <dd className="text-brand-text-primary">{formatPriceMRU(total / 5)}</dd>
               </div>
-              <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-                <dt className="text-base">Total</dt>
-                <dd className="text-base">
-                  ${total === 0 ? 0 : Math.round(total + total / 5 + 5)}
+              <div className="flex items-center justify-between border-t-2 border-brand-primary pt-4">
+                <dt className="text-lg font-serif font-semibold text-brand-text-primary">Total</dt>
+                <dd className="text-lg font-serif font-semibold text-brand-primary">
+                  {formatPriceMRU(total === 0 ? 0 : Math.round(total + total / 5 + 5))}
                 </dd>
               </div>
             </dl>
@@ -412,17 +396,24 @@ const CheckoutPage = () => {
             <section aria-labelledby="contact-info-heading">
               <h2
                 id="contact-info-heading"
-                className="text-lg font-medium text-gray-900"
+                className="text-2xl font-serif font-semibold text-brand-text-primary mb-6"
               >
-                Contact information
+                Informations de contact
               </h2>
+
+              {/* Message informatif - Pas besoin de compte */}
+              <div className="mt-4 p-4 bg-brand-accent/20 border border-brand-primary/30 rounded-md">
+                <p className="text-sm text-brand-text-primary">
+                  <strong className="text-brand-primary">💡 Pas besoin de créer un compte !</strong> Remplissez simplement vos coordonnées ci-dessous pour valider votre commande.
+                </p>
+              </div>
 
               <div className="mt-6">
                 <label
                   htmlFor="name-input"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-brand-text-primary"
                 >
-                  Name * (min 2 characters)
+                  Prénom * (min 2 caractères)
                 </label>
                 <div className="mt-1">
                   <input
@@ -439,7 +430,7 @@ const CheckoutPage = () => {
                     autoComplete="given-name"
                     required
                     disabled={isSubmitting}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                   />
                 </div>
               </div>
@@ -447,9 +438,9 @@ const CheckoutPage = () => {
               <div className="mt-6">
                 <label
                   htmlFor="lastname-input"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-brand-text-primary"
                 >
-                  Lastname * (min 2 characters)
+                  Nom * (min 2 caractères)
                 </label>
                 <div className="mt-1">
                   <input
@@ -466,7 +457,7 @@ const CheckoutPage = () => {
                     autoComplete="family-name"
                     required
                     disabled={isSubmitting}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                   />
                 </div>
               </div>
@@ -474,9 +465,9 @@ const CheckoutPage = () => {
               <div className="mt-6">
                 <label
                   htmlFor="phone-input"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-brand-text-primary"
                 >
-                  Phone number * (min 10 digits)
+                  Téléphone * (min 10 chiffres)
                 </label>
                 <div className="mt-1">
                   <input
@@ -493,7 +484,7 @@ const CheckoutPage = () => {
                     autoComplete="tel"
                     required
                     disabled={isSubmitting}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                   />
                 </div>
               </div>
@@ -501,9 +492,9 @@ const CheckoutPage = () => {
               <div className="mt-6">
                 <label
                   htmlFor="email-address"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-brand-text-primary"
                 >
-                  Email address *
+                  Email *
                 </label>
                 <div className="mt-1">
                   <input
@@ -520,7 +511,7 @@ const CheckoutPage = () => {
                     autoComplete="email"
                     required
                     disabled={isSubmitting}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                   />
                 </div>
               </div>
@@ -528,19 +519,19 @@ const CheckoutPage = () => {
 
             {/* Payment Notice */}
             <section className="mt-10">
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+              <div className="bg-brand-accent/20 border border-brand-primary/30 rounded-md p-4">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <svg className="h-5 w-5 text-brand-primary" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-blue-800">
-                      Payment Information
+                    <h3 className="text-sm font-medium text-brand-text-primary">
+                      Informations de paiement
                     </h3>
-                    <div className="mt-2 text-sm text-blue-700">
-                      <p>Payment will be processed after order confirmation. You will be contacted for payment details.</p>
+                    <div className="mt-2 text-sm text-brand-text-secondary">
+                      <p>Le paiement sera traité après confirmation de la commande. Vous serez contacté pour les détails de paiement.</p>
                     </div>
                   </div>
                 </div>
@@ -551,18 +542,18 @@ const CheckoutPage = () => {
             <section aria-labelledby="shipping-heading" className="mt-10">
               <h2
                 id="shipping-heading"
-                className="text-lg font-medium text-gray-900"
+                className="text-2xl font-serif font-semibold text-brand-text-primary mb-6"
               >
-                Shipping address
+                Adresse de livraison
               </h2>
 
               <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
                 <div className="sm:col-span-3">
                   <label
                     htmlFor="company"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-brand-text-primary"
                   >
-                    Company *
+                    Entreprise * (min 5 caractères)
                   </label>
                   <div className="mt-1">
                     <input
@@ -571,7 +562,7 @@ const CheckoutPage = () => {
                       name="company"
                       required
                       disabled={isSubmitting}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                       value={checkoutForm.company}
                       onChange={(e) =>
                         setCheckoutForm({
@@ -586,9 +577,9 @@ const CheckoutPage = () => {
                 <div className="sm:col-span-3">
                   <label
                     htmlFor="address"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-brand-text-primary"
                   >
-                    Address *
+                    Adresse * (min 5 caractères)
                   </label>
                   <div className="mt-1">
                     <input
@@ -598,7 +589,7 @@ const CheckoutPage = () => {
                       autoComplete="street-address"
                       required
                       disabled={isSubmitting}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                       value={checkoutForm.adress}
                       onChange={(e) =>
                         setCheckoutForm({
@@ -613,9 +604,9 @@ const CheckoutPage = () => {
                 <div className="sm:col-span-3">
                   <label
                     htmlFor="apartment"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-brand-text-primary"
                   >
-                    Apartment, suite, etc. * (required)
+                    Appartement, suite, etc. * (requis)
                   </label>
                   <div className="mt-1">
                     <input
@@ -624,7 +615,7 @@ const CheckoutPage = () => {
                       name="apartment"
                       required
                       disabled={isSubmitting}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                       value={checkoutForm.apartment}
                       onChange={(e) =>
                         setCheckoutForm({
@@ -639,9 +630,9 @@ const CheckoutPage = () => {
                 <div>
                   <label
                     htmlFor="city"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-brand-text-primary"
                   >
-                    City *
+                    Ville * (min 5 caractères)
                   </label>
                   <div className="mt-1">
                     <input
@@ -651,7 +642,7 @@ const CheckoutPage = () => {
                       autoComplete="address-level2"
                       required
                       disabled={isSubmitting}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                       value={checkoutForm.city}
                       onChange={(e) =>
                         setCheckoutForm({
@@ -666,9 +657,9 @@ const CheckoutPage = () => {
                 <div>
                   <label
                     htmlFor="region"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-brand-text-primary"
                   >
-                    Country *
+                    Pays * (min 5 caractères)
                   </label>
                   <div className="mt-1">
                     <input
@@ -678,7 +669,7 @@ const CheckoutPage = () => {
                       autoComplete="address-level1"
                       required
                       disabled={isSubmitting}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                       value={checkoutForm.country}
                       onChange={(e) =>
                         setCheckoutForm({
@@ -693,9 +684,9 @@ const CheckoutPage = () => {
                 <div>
                   <label
                     htmlFor="postal-code"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-brand-text-primary"
                   >
-                    Postal code *
+                    Code postal * (min 3 caractères)
                   </label>
                   <div className="mt-1">
                     <input
@@ -705,7 +696,7 @@ const CheckoutPage = () => {
                       autoComplete="postal-code"
                       required
                       disabled={isSubmitting}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                       value={checkoutForm.postalCode}
                       onChange={(e) =>
                         setCheckoutForm({
@@ -720,9 +711,9 @@ const CheckoutPage = () => {
                 <div className="sm:col-span-3">
                   <label
                     htmlFor="order-notice"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-brand-text-primary"
                   >
-                    Order notice
+                    Notes de commande (optionnel)
                   </label>
                   <div className="mt-1">
                     <textarea
@@ -744,14 +735,14 @@ const CheckoutPage = () => {
               </div>
             </section>
 
-            <div className="mt-10 border-t border-gray-200 pt-6 ml-0">
+            <div className="mt-10 border-t border-brand-primary/20 pt-6 ml-0">
               <button
                 type="button"
                 onClick={makePurchase}
                 disabled={isSubmitting}
-                className="w-full rounded-md border border-transparent bg-blue-500 px-20 py-2 text-lg font-medium text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-gray-50 sm:order-last disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full rounded-md border border-transparent bg-brand-secondary px-20 py-3 text-lg font-serif font-semibold text-white shadow-sm hover:bg-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-brand-bg-primary transition-colors duration-300 sm:order-last disabled:bg-gray-400 disabled:cursor-not-allowed uppercase tracking-wider"
               >
-                {isSubmitting ? "Processing Order..." : "Place Order"}
+                {isSubmitting ? "Traitement de la commande..." : "Valider la commande"}
               </button>
             </div>
           </div>

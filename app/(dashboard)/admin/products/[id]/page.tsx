@@ -10,6 +10,7 @@ import {
 } from "../../../../../utils/categoryFormating";
 import { nanoid } from "nanoid";
 import apiClient from "@/lib/api";
+import { getImageUrl } from "@/utils/imageUtils";
 
 interface DashboardProductDetailsProps {
   params: Promise<{ id: string }>;
@@ -69,6 +70,10 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
       if (response.status === 200) {
         await response.json();
         toast.success("Product successfully updated");
+        // Redirection vers la liste des produits après 1 seconde
+        setTimeout(() => {
+          router.push("/admin/products");
+        }, 1000);
       } else {
         const errorData = await response.json();
         toast.error(
@@ -87,53 +92,58 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
     formData.append("uploadedFile", file);
 
     try {
-      const response = await apiClient.post("/api/main-image", {
+      // Use fetch directly for FormData upload
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiBaseUrl}/api/main-image`, {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
         const data = await response.json();
+        // Update the product with the new image filename
+        if (product) {
+          setProduct({ ...product, mainImage: data.filename });
+        }
+        toast.success("Image téléchargée avec succès");
       } else {
-        toast.error("File upload unsuccessful.");
+        const errorData = await response.json();
+        toast.error(errorData.message || "Erreur lors de l'upload de l'image");
       }
     } catch (error) {
       console.error("There was an error while during request sending:", error);
-      toast.error("There was an error during request sending");
+      toast.error("Erreur réseau lors de l'upload de l'image");
     }
   };
 
-  // fetching main product data including other product images
-  const fetchProductData = async () => {
-    apiClient
-      .get(`/api/products/${id}`)
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        setProduct(data);
-      });
-
-    const imagesData = await apiClient.get(`/api/images/${id}`, {
-      cache: "no-store",
-    });
-    const images = await imagesData.json();
-    setOtherImages((currentImages) => images);
-  };
-
-  // fetching all product categories. It will be used for displaying categories in select category input
-  const fetchCategories = async () => {
-    apiClient
-      .get(`/api/categories`)
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        setCategories(data);
-      });
-  };
-
   useEffect(() => {
+    const fetchProductData = async () => {
+      apiClient
+        .get(`/api/products/${id}`)
+        .then((res) => {
+          return res.json();
+        })
+        .then((data) => {
+          setProduct(data);
+        });
+
+      const imagesData = await apiClient.get(`/api/images/${id}`, {
+        cache: "no-store",
+      });
+      const images = await imagesData.json();
+      setOtherImages((currentImages) => images);
+    };
+
+    const fetchCategories = async () => {
+      apiClient
+        .get(`/api/categories`)
+        .then((res) => {
+          return res.json();
+        })
+        .then((data) => {
+          setCategories(data);
+        });
+    };
     fetchCategories();
     fetchProductData();
   }, [id]);
@@ -283,7 +293,7 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
           />
           {product?.mainImage && (
             <Image
-              src={`/` + product?.mainImage}
+              src={getImageUrl(product?.mainImage)}
               alt={product?.title}
               className="w-auto h-auto mt-2"
               width={100}
@@ -328,7 +338,7 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
           <button
             type="button"
             onClick={updateProduct}
-            className="uppercase bg-blue-500 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2"
+            className="uppercase bg-brand-secondary px-10 py-5 text-lg border border-brand-primary font-bold text-white shadow-sm hover:bg-brand-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors duration-300"
           >
             Update product
           </button>

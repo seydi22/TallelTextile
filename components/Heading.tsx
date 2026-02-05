@@ -1,19 +1,22 @@
 // *********************
-// Role of the component: Simple H2 heading component
+// Role of the component: Simple H2 heading component for sections
 // Name of the component: Heading.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
+// Developer: Aleksandar Kuzmanovic (Updated by Gemini for TALLEL TEXTILE)
+// Version: 2.0
 // Component call: <Heading title={title} />
 // Input parameters: { title: string }
-// Output: h2 heading title with some styles 
+// Output: A centered h2 heading with brand styles.
 // *********************
 
 import React from 'react'
 
-const Heading = ({ title } : { title: string }) => {
+const Heading = ({ title, subtitle }: { title: string; subtitle?: string }) => {
   return (
-    <h2 className="text-white text-7xl font-extrabold text-center mt-20 max-lg:text-5xl">{ title }</h2>
-  )
-}
+    <div className="mb-8 md:mb-12">
+      <h2 className="section-title">{title}</h2>
+      {subtitle && <p className="section-subtitle">{subtitle}</p>}
+    </div>
+  );
+};
 
 export default Heading

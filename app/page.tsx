@@ -1,9 +1,10 @@
-import { CategoryMenu, Hero, Incentives, IntroducingSection, Newsletter, ProductsSection } from "@/components";
+import { CategoryMenu, Incentives, IntroducingSection, Newsletter, ProductsSection } from "@/components";
+import HeroZuma from "@/components/HeroZuma";
 
 export default function Home() {
   return (
     <>
-    <Hero />
+    <HeroZuma />
     <IntroducingSection />
     <CategoryMenu />
     <ProductsSection />

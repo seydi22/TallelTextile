@@ -13,7 +13,19 @@ export const apiClient = {
       },
     };
     
-    return fetch(url, { ...defaultOptions, ...options });
+    try {
+      return await fetch(url, { ...defaultOptions, ...options });
+    } catch (error: any) {
+      // Améliorer le message d'erreur pour les erreurs de connexion
+      const errorMessage = error?.message || String(error);
+      if (errorMessage.includes('fetch failed') || errorMessage.includes('ECONNREFUSED')) {
+        // Créer une erreur plus descriptive
+        const connectionError = new Error('Backend API non disponible. Veuillez démarrer le serveur avec: cd server && node app.js');
+        (connectionError as any).isConnectionError = true;
+        throw connectionError;
+      }
+      throw error;
+    }
   },
   
   // Convenience methods

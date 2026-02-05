@@ -1,37 +1,34 @@
 // *********************
-// Role of the component: Helper component for seperating dynamic client component from server component on the single product page with the intention to preserve SEO benefits of Next.js
+// Role of the component: Client component for dynamic fields on the single product page.
 // Name of the component: SingleProductDynamicFields.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
+// Developer: Aleksandar Kuzmanovic (Updated by Gemini for TALLEL TEXTILE)
+// Version: 2.0
 // Component call: <SingleProductDynamicFields product={product} />
 // Input parameters: { product: Product }
-// Output: Quantity, add to cart and buy now component on the single product page
+// Output: Quantity input and an "Add to cart" button.
 // *********************
 
 "use client";
 import React, { useState } from "react";
 import QuantityInput from "./QuantityInput";
 import AddToCartSingleProductBtn from "./AddToCartSingleProductBtn";
-import BuyNowSingleProductBtn from "./BuyNowSingleProductBtn";
 
 const SingleProductDynamicFields = ({ product }: { product: Product }) => {
   const [quantityCount, setQuantityCount] = useState<number>(1);
   return (
     <>
-      <QuantityInput
-        quantityCount={quantityCount}
-        setQuantityCount={setQuantityCount}
-      />
       {Boolean(product.inStock) && (
-        <div className="flex gap-x-5 max-[500px]:flex-col max-[500px]:items-center max-[500px]:gap-y-1">
-          <AddToCartSingleProductBtn
+        <div className="flex items-center gap-x-4 max-[500px]:flex-col max-[500px]:items-stretch max-[500px]:gap-y-3">
+          <QuantityInput
             quantityCount={quantityCount}
-            product={product}
+            setQuantityCount={setQuantityCount}
           />
-          <BuyNowSingleProductBtn
-            quantityCount={quantityCount}
-            product={product}
-          />
+          <div className="flex-1">
+            <AddToCartSingleProductBtn
+              quantityCount={quantityCount}
+              product={product}
+            />
+          </div>
         </div>
       )}
     </>

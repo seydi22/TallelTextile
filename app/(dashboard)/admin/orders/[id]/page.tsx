@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { formatPriceMRU } from "@/lib/formatPrice";
+import { getImageUrl } from "@/utils/imageUtils";
 
 interface OrderProduct {
   id: string;
@@ -348,7 +350,7 @@ const AdminSingleOrder = () => {
           {orderProducts?.map((product) => (
             <div className="flex items-center gap-x-4" key={product?.id}>
               <Image
-                src={product?.product?.mainImage ? `/${product?.product?.mainImage}` : "/product_placeholder.jpg"}
+                src={getImageUrl(product?.product?.mainImage)}
                 alt={product?.product?.title}
                 width={50}
                 height={50}
@@ -359,23 +361,23 @@ const AdminSingleOrder = () => {
                   {product?.product?.title}
                 </Link>
                 <p>
-                  ${product?.product?.price} * {product?.quantity} items
+                  {formatPriceMRU(product?.product?.price)} × {product?.quantity} articles
                 </p>
               </div>
             </div>
           ))}
           <div className="flex flex-col gap-y-2 mt-10">
-            <p className="text-2xl">Subtotal: ${order?.total}</p>
-            <p className="text-2xl">Tax 20%: ${order?.total / 5}</p>
-            <p className="text-2xl">Shipping: $5</p>
+            <p className="text-2xl">Sous-total: {formatPriceMRU(order?.total)}</p>
+            <p className="text-2xl">Taxe 20%: {formatPriceMRU(order?.total / 5)}</p>
+            <p className="text-2xl">Livraison: {formatPriceMRU(5)}</p>
             <p className="text-3xl font-semibold">
-              Total: ${order?.total + order?.total / 5 + 5}
+              Total: {formatPriceMRU(order?.total + order?.total / 5 + 5)}
             </p>
           </div>
           <div className="flex gap-x-2 max-sm:flex-col mt-5">
             <button
               type="button"
-              className="uppercase bg-blue-500 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2"
+              className="uppercase bg-brand-secondary px-10 py-5 text-lg border border-brand-primary font-bold text-white shadow-sm hover:bg-brand-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors duration-300"
               onClick={updateOrder}
             >
               Update order
