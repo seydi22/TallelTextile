@@ -16,6 +16,8 @@ import React, { useEffect, useState } from "react";
 import CustomButton from "./CustomButton";
 import apiClient from "@/lib/api";
 import { sanitize } from "@/lib/sanitize";
+import { formatPriceMRU } from "@/lib/formatPrice";
+import { getImageUrl } from "@/utils/imageUtils";
 
 const DashboardProductTable = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -80,7 +82,7 @@ const DashboardProductTable = () => {
                           <Image
                             width={48}
                             height={48}
-                            src={product?.mainImage ? `/${product?.mainImage}` : "/product_placeholder.jpg"}
+                            src={getImageUrl(product?.mainImage)}
                             alt={sanitize(product?.title) || "Product image"}
                             className="w-auto h-auto"
                           />
@@ -103,7 +105,7 @@ const DashboardProductTable = () => {
                     </span>) }
                     
                   </td>
-                  <td>${product?.price}</td>
+                  <td>{formatPriceMRU(product?.price)}</td>
                   <th>
                     <Link
                       href={`/admin/products/${product.id}`}

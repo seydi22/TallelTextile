@@ -1,31 +1,121 @@
-// *********************
-// Role of the component: Category wrapper that will contain title and category items
-// Name of the component: CategoryMenu.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <CategoryMenu />
-// Input parameters: no input parameters
-// Output: section title and category items
-// *********************
-
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import CategoryItem from "./CategoryItem";
-import Image from "next/image";
-import { categoryMenuList } from "@/lib/utils";
 import Heading from "./Heading";
 
+interface Category {
+  id: string;
+  title: string;
+  href: string;
+  bgImage: string;
+}
+
 const CategoryMenu = () => {
-  return (
-    <div className="py-10 bg-blue-500">
-      <Heading title="BROWSE CATEGORIES" />
-      <div className="max-w-screen-2xl mx-auto py-10 gap-x-5 px-16 max-md:px-10 gap-y-5 grid grid-cols-5 max-lg:grid-cols-3 max-md:grid-cols-2 max-[450px]:grid-cols-1">
-        {categoryMenuList.map((item) => (
-          <CategoryItem title={item.title} key={item.id} href={item.href}>
-            <Image src={item.src} width={48} height={48} alt={item.title} />
-          </CategoryItem>
-        ))}
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/categories", {
+          cache: 'no-store', // Force fresh data
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("📦 Data received from /api/categories:", data);
+        
+        // Handle both array and error object
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
+        if (Array.isArray(data)) {
+          if (data.length > 0) {
+            setCategories(data);
+            console.log(`✅ Loaded ${data.length} categories:`, data);
+          } else {
+            console.warn("⚠️ No categories found in response");
+            setCategories([]);
+          }
+        } else {
+          setError("Format de données invalide reçu du serveur.");
+          console.error(
+            "❌ Data received from /api/categories is not an array:",
+            data
+          );
+          setCategories([]);
+        }
+      } catch (e: any) {
+        console.error("❌ Failed to fetch categories:", e);
+        setError(e.message || "Erreur lors du chargement des catégories");
+        // Ne pas vider les catégories en cas d'erreur pour éviter le flash
+        // setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []); // Empty dependency array means this runs once on mount
+
+  if (loading) {
+    return (
+      <div className="py-24 bg-brand-bg-primary text-center">
+        <p>Loading categories...</p>
       </div>
-    </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="py-24 bg-brand-bg-primary text-center text-red-500">
+        <p>Error loading categories: {error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <section className="py-20 md:py-32 bg-white">
+      <div className="max-w-screen-2xl mx-auto px-6 md:px-12">
+        {/* Section Title - Zuma style: minimal, elegant */}
+        <div className="text-center mb-16 md:mb-24">
+          <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-light text-brand-text-primary tracking-tight mb-4">
+            Nos Univers
+          </h2>
+          <div className="w-24 h-px bg-brand-primary mx-auto"></div>
+        </div>
+
+        {/* Categories Grid - Zuma style: generous spacing, large images */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
+          {categories.length > 0 ? (
+            categories.map((item, index) => (
+              <div 
+                key={item.id}
+                className="opacity-0 animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}
+              >
+                <CategoryItem
+                  title={item.title}
+                  href={item.href}
+                  bgImage={item.bgImage || "/product_placeholder.jpg"}
+                />
+              </div>
+            ))
+          ) : (
+            !loading && (
+              <div className="col-span-full text-center text-brand-text-secondary py-20">
+                <p className="font-serif text-lg">Aucune catégorie disponible pour le moment.</p>
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    </section>
   );
 };
 

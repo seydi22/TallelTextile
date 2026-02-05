@@ -1,23 +1,19 @@
 // *********************
 // Role of the component: Button for adding product to the cart on the single product page
 // Name of the component: AddToCartSingleProductBtn.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
+// Developer: Aleksandar Kuzmanovic (Updated by Gemini for TALLEL TEXTILE)
+// Version: 2.0
 // Component call: <AddToCartSingleProductBtn product={product} quantityCount={quantityCount}  />
 // Input parameters: SingleProductBtnProps interface
-// Output: Button with adding to cart functionality
+// Output: A primary button with "add to cart" functionality.
 // *********************
 "use client";
-
-
 
 import React from "react";
 import { useProductStore } from "@/app/_zustand/store";
 import toast from "react-hot-toast";
 
-
-
-const AddToCartSingleProductBtn = ({ product, quantityCount } : SingleProductBtnProps) => {
+const AddToCartSingleProductBtn = ({ product, quantityCount }: SingleProductBtnProps) => {
   const { addToCart, calculateTotals } = useProductStore();
 
   const handleAddToCart = () => {
@@ -26,17 +22,18 @@ const AddToCartSingleProductBtn = ({ product, quantityCount } : SingleProductBtn
       title: product?.title,
       price: product?.price,
       image: product?.mainImage,
-      amount: quantityCount
+      amount: quantityCount,
     });
     calculateTotals();
-    toast.success("Product added to the cart");
+    toast.success(`${product?.title} a été ajouté au panier.`);
   };
+
   return (
     <button
       onClick={handleAddToCart}
-      className="btn w-[200px] text-lg border border-gray-300 border-1 font-normal bg-white text-blue-500 hover:bg-blue-500 hover:text-white hover:border-blue-500 hover:scale-110 transition-all uppercase ease-in max-[500px]:w-full"
+      className="w-full h-12 bg-brand-secondary text-white font-sans font-semibold text-lg rounded-md hover:bg-gray-800 transition-colors duration-300"
     >
-      Add to cart
+      Ajouter au panier
     </button>
   );
 };

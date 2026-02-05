@@ -13,14 +13,14 @@ const AdminDashboardPage = () => {
           <StatsElement />
           <StatsElement />
         </div>
-        <div className="w-full bg-blue-500 text-white h-40 flex flex-col justify-center items-center gap-y-2">
-          <h4 className="text-3xl text-gray-100 max-[400px]:text-2xl">
-            Number of visitors today
+        <div className="w-full bg-brand-secondary text-white h-40 flex flex-col justify-center items-center gap-y-2">
+          <h4 className="text-3xl text-white max-[400px]:text-2xl font-serif font-semibold">
+            Nombre de visiteurs aujourd&apos;hui
           </h4>
-          <p className="text-3xl font-bold">1200</p>
-          <p className="text-green-300 flex gap-x-1 items-center">
+          <p className="text-3xl font-bold text-brand-accent">1200</p>
+          <p className="text-brand-accent flex gap-x-1 items-center">
             <FaArrowUp />
-            12.5% Since last month
+            12.5% Depuis le mois dernier
           </p>
         </div>
       </div>

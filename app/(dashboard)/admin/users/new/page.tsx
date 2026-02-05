@@ -1,5 +1,6 @@
 "use client";
 import { DashboardSidebar } from "@/components";
+import apiClient from "@/lib/api";
 import { isValidEmailAddressFormat } from "@/lib/utils";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
@@ -22,50 +23,36 @@ const DashboardCreateNewUser = () => {
       return;
     }
 
-    // Sanitize form data before sending to API
-    const sanitizedUserInput = sanitizeFormData(userInput);
+    if (!isValidEmailAddressFormat(userInput.email)) {
+      toast.error("You entered invalid email address format");
+      return;
+    }
 
-    if (
-      userInput.email.length > 3 &&
-      userInput.role.length > 0 &&
-      userInput.password.length > 0
-    ) {
-      if (!isValidEmailAddressFormat(userInput.email)) {
-        toast.error("You entered invalid email address format");
-        return;
-      }
+    if (userInput.password.length <= 7) {
+      toast.error("Password must be longer than 7 characters");
+      return;
+    }
 
-      if (userInput.password.length > 7) {
-        const requestOptions: any = {
-          method: "post",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(sanitizedUserInput),
-        };
-        ap(`/api/users`, requestOptions)
-          .then((response) => {
-            if(response.status === 201){
-              return response.json();
+    try {
+      // Sanitize form data before sending to API
+      const sanitizedUserInput = sanitizeFormData(userInput);
+      
+      const response = await apiClient.post(`/api/users`, sanitizedUserInput);
 
-            }else{
-              
-              throw Error("Error while creating user");
-            }
-          })
-          .then((data) => {
-            toast.success("User added successfully");
-            setUserInput({
-              email: "",
-              password: "",
-              role: "user",
-            });
-          }).catch(error => {
-            toast.error("Error while creating user");
-          });
+      if (response.status === 201) {
+        toast.success("User added successfully");
+        setUserInput({
+          email: "",
+          password: "",
+          role: "user",
+        });
       } else {
-        toast.error("Password must be longer than 7 characters");
+        const errorData = await response.json();
+        toast.error(errorData.error || "Error while creating user");
       }
-    } else {
-      toast.error("You must enter all input values to add a user");
+    } catch (error) {
+      toast.error("An unexpected error occurred.");
+      console.error("Error creating user:", error);
     }
   };
 
@@ -127,7 +114,7 @@ const DashboardCreateNewUser = () => {
         <div className="flex gap-x-2">
           <button
             type="button"
-            className="uppercase bg-blue-500 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2"
+            className="uppercase bg-brand-secondary px-10 py-5 text-lg border border-brand-primary font-bold text-white shadow-sm hover:bg-brand-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors duration-300"
             onClick={addNewUser}
           >
             Create user

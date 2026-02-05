@@ -157,11 +157,11 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
         <h1 className="text-4xl font-bold mb-8">Bulk Upload Products</h1>
 
         {/* Instructions */}
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-          <h2 className="text-lg font-semibold mb-2 text-blue-800">
+        <div className="bg-brand-accent/20 border-l-4 border-brand-primary p-4 mb-6">
+          <h2 className="text-lg font-semibold mb-2 text-brand-text-primary">
             📋 Instructions
           </h2>
-          <ul className="list-disc list-inside space-y-1 text-sm text-blue-700">
+          <ul className="list-disc list-inside space-y-1 text-sm text-brand-text-secondary">
             <li>Download the CSV template below</li>
             <li>
               Fill in your product data (title, price, manufacturer, stock,
@@ -187,7 +187,7 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               dragActive
-                ? "border-blue-500 bg-blue-50"
+                ? "border-brand-primary bg-brand-accent/20"
                 : "border-gray-300 bg-gray-50 hover:border-gray-400"
             }`}
             onDragEnter={handleDrag}
@@ -198,7 +198,7 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
             <FaFileUpload className="text-6xl text-gray-400 mx-auto mb-4" />
             <p className="text-lg mb-2">
               {file ? (
-                <span className="font-semibold text-blue-600">
+                <span className="font-semibold text-brand-primary">
                   Selected: {file.name} ({(file.size / 1024).toFixed(2)} KB)
                 </span>
               ) : (
@@ -215,7 +215,7 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
             />
             <label
               htmlFor="file-upload"
-              className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded cursor-pointer transition-colors"
+              className="inline-block bg-brand-secondary hover:bg-brand-primary text-white font-bold py-2 px-6 rounded cursor-pointer transition-colors duration-300"
             >
               Select CSV File
             </label>
@@ -231,7 +231,7 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
               className={`w-full py-4 px-6 rounded-lg font-bold text-white text-lg transition-colors ${
                 uploading
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-500 hover:bg-blue-600"
+                  : "bg-brand-secondary hover:bg-brand-primary"
               }`}
             >
               {uploading ? (
@@ -303,7 +303,7 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
                     <p className="font-semibold">Upload Statistics:</p>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-blue-600">
+                        <p className="text-2xl font-bold text-brand-primary">
                           {uploadResult.details.processed}
                         </p>
                         <p className="text-sm text-gray-600">Processed</p>

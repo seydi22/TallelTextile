@@ -4,17 +4,18 @@ import React from "react";
 import { sanitize } from "@/lib/sanitize";
 
 interface Props {
-  searchParams: { search: string };
+  searchParams: Promise<{ search?: string }>;
 }
 
 // sending api request for search results for a given search text
 const SearchPage = async ({ searchParams }: Props) => {
   const sp = await searchParams;
+  const query = sp?.search || "";
   let products = [];
 
   try {
     const data = await apiClient.get(
-      `/api/search?query=${sp?.search || ""}`
+      `/api/search?query=${query}`
     );
 
     if (!data.ok) {
@@ -33,9 +34,9 @@ const SearchPage = async ({ searchParams }: Props) => {
     <div>
       <SectionTitle title="Search Page" path="Home | Search" />
       <div className="max-w-screen-2xl mx-auto">
-        {sp?.search && (
+        {query && (
           <h3 className="text-4xl text-center py-10 max-sm:text-3xl">
-            Showing results for {sanitize(sp?.search)}
+            Showing results for {sanitize(query as string)}
           </h3>
         )}
         <div className="grid grid-cols-4 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">

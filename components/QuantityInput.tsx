@@ -1,43 +1,38 @@
 // *********************
 // Role of the component: Quantity input for incrementing and decrementing product quantity on the single product page
 // Name of the component: QuantityInput.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
+// Developer: Aleksandar Kuzmanovic (Updated by Gemini for TALLEL TEXTILE)
+// Version: 2.0
 // Component call: <QuantityInput quantityCount={quantityCount} setQuantityCount={setQuantityCount} />
 // Input parameters: QuantityInputProps interface
-// Output: one number input and two buttons
+// Output: one number input and two buttons for quantity manipulation.
 // *********************
 
 "use client";
 
 import React from "react";
-import { FaPlus } from "react-icons/fa6";
-import { FaMinus } from "react-icons/fa6";
+import { FaPlus, FaMinus } from "react-icons/fa6";
 
 interface QuantityInputProps {
   quantityCount: number;
   setQuantityCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const QuantityInput = ({quantityCount, setQuantityCount} : QuantityInputProps) => {
-
-
+const QuantityInput = ({ quantityCount, setQuantityCount }: QuantityInputProps) => {
   const handleQuantityChange = (actionName: string): void => {
     if (actionName === "plus") {
       setQuantityCount(quantityCount + 1);
-    } else if (actionName === "minus" && quantityCount !== 1) {
+    } else if (actionName === "minus" && quantityCount > 1) {
       setQuantityCount(quantityCount - 1);
     }
   };
 
   return (
-    <div className="flex items-center gap-x-4 max-[500px]:justify-center">
-      <p className="text-xl">Quantity: </p>
-
-      <div className="flex items-center gap-1">
+    <div className="flex items-center max-[500px]:justify-center">
+      <div className="flex items-center border border-gray-300 rounded-md">
         <button
           type="button"
-          className="size-10 leading-10 text-gray-600 transition hover:opacity-75 flex justify-center items-center border"
+          className="size-12 leading-10 text-gray-600 transition hover:bg-gray-100 flex justify-center items-center"
           onClick={() => handleQuantityChange("minus")}
         >
           <FaMinus />
@@ -46,14 +41,14 @@ const QuantityInput = ({quantityCount, setQuantityCount} : QuantityInputProps) =
         <input
           type="number"
           id="Quantity"
-          disabled={true}
+          readOnly
           value={quantityCount}
-          className="h-10 w-24 rounded border-gray-200 sm:text-sm"
+          className="h-12 w-16 border-transparent text-center [-moz-appearance:_textfield] sm:text-lg [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none"
         />
 
         <button
           type="button"
-          className="size-10 leading-10 text-gray-600 transition hover:opacity-75 flex justify-center items-center border"
+          className="size-12 leading-10 text-gray-600 transition hover:bg-gray-100 flex justify-center items-center"
           onClick={() => handleQuantityChange("plus")}
         >
           <FaPlus />

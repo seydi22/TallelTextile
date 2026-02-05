@@ -38,14 +38,19 @@ export default function NewMerchantPage() {
     setIsSubmitting(true);
     
     try {
-      const response = await apiClient.post("/api/merchants", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await apiClient.post("/api/merchants", formData);
 
       if (!response.ok) {
-        throw new Error("Failed to create merchant");
+        let errorMessage = "Failed to create merchant";
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (parseError) {
+          console.error("Failed to parse error response:", parseError);
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -83,7 +88,7 @@ export default function NewMerchantPage() {
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
                 placeholder="Merchant name"
               />
             </div>
@@ -94,7 +99,7 @@ export default function NewMerchantPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
                 placeholder="email@example.com"
               />
             </div>
@@ -105,7 +110,7 @@ export default function NewMerchantPage() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
                 placeholder="Phone number"
               />
             </div>
@@ -115,7 +120,7 @@ export default function NewMerchantPage() {
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
               >
                 <option value="ACTIVE">Active</option>
                 <option value="INACTIVE">Inactive</option>
@@ -128,7 +133,7 @@ export default function NewMerchantPage() {
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
                 placeholder="Merchant address"
               />
             </div>
@@ -146,7 +151,7 @@ export default function NewMerchantPage() {
               <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className={`bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition ${
+                className={`bg-brand-secondary text-white px-6 py-2 rounded-md hover:bg-brand-primary transition-colors duration-300 ${
                   isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >

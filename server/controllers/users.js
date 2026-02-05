@@ -30,9 +30,29 @@ const createUser = asyncHandler(async (request, response) => {
     throw new AppError("Invalid email format", 400);
   }
 
-  // Password validation
+  // Enhanced password validation
   if (password.length < 8) {
-    throw new AppError("Password must be at least 8 characters long", 400);
+    throw new AppError("Le mot de passe doit contenir au moins 8 caractères", 400);
+  }
+  
+  // Check for at least one uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    throw new AppError("Le mot de passe doit contenir au moins une majuscule", 400);
+  }
+  
+  // Check for at least one lowercase letter
+  if (!/[a-z]/.test(password)) {
+    throw new AppError("Le mot de passe doit contenir au moins une minuscule", 400);
+  }
+  
+  // Check for at least one number
+  if (!/\d/.test(password)) {
+    throw new AppError("Le mot de passe doit contenir au moins un chiffre", 400);
+  }
+  
+  // Check for at least one special character
+  if (!/[@$!%*?&]/.test(password)) {
+    throw new AppError("Le mot de passe doit contenir au moins un caractère spécial (@$!%*?&)", 400);
   }
 
   const hashedPassword = await bcrypt.hash(password, 14);
@@ -76,9 +96,31 @@ const updateUser = asyncHandler(async (request, response) => {
     updateData.email = email;
   }
   if (password) {
+    // Enhanced password validation
     if (password.length < 8) {
-      throw new AppError("Password must be at least 8 characters long", 400);
+      throw new AppError("Le mot de passe doit contenir au moins 8 caractères", 400);
     }
+    
+    // Check for at least one uppercase letter
+    if (!/[A-Z]/.test(password)) {
+      throw new AppError("Le mot de passe doit contenir au moins une majuscule", 400);
+    }
+    
+    // Check for at least one lowercase letter
+    if (!/[a-z]/.test(password)) {
+      throw new AppError("Le mot de passe doit contenir au moins une minuscule", 400);
+    }
+    
+    // Check for at least one number
+    if (!/\d/.test(password)) {
+      throw new AppError("Le mot de passe doit contenir au moins un chiffre", 400);
+    }
+    
+    // Check for at least one special character
+    if (!/[@$!%*?&]/.test(password)) {
+      throw new AppError("Le mot de passe doit contenir au moins un caractère spécial (@$!%*?&)", 400);
+    }
+    
     updateData.password = await bcrypt.hash(password, 14);
   }
   if (role) {

@@ -1,8 +1,8 @@
 // *********************
 // Role of the component: Header component
 // Name of the component: Header.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
+// Developer: Seydi Dieng (Updated by Gemini for TALLEL TEXTILE)
+// Version: 2.0
 // Component call: <Header />
 // Input parameters: no input parameters
 // Output: Header component
@@ -10,126 +10,153 @@
 
 "use client";
 import { usePathname } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import HeaderTop from "./HeaderTop";
-import Image from "next/image";
-import SearchInput from "./SearchInput";
 import Link from "next/link";
-import { FaBell } from "react-icons/fa6";
+import { FaSearch } from "react-icons/fa";
 
 import CartElement from "./CartElement";
-import NotificationBell from "./NotificationBell";
-import HeartElement from "./HeartElement";
-import { signOut, useSession } from "next-auth/react";
-import toast from "react-hot-toast";
-import { useWishlistStore } from "@/app/_zustand/wishlistStore";
-import apiClient from "@/lib/api";
+
+const NavLink = ({ href, children, isActive }: { href: string, children: React.ReactNode, isActive?: boolean }) => (
+  <Link 
+    href={href} 
+    className={`nav-link ${isActive ? 'nav-link-active' : ''}`}
+  >
+    {children}
+  </Link>
+);
+
+interface Category {
+  id: string;
+  title: string;
+  href: string;
+}
 
 const Header = () => {
-  const { data: session, status } = useSession();
   const pathname = usePathname();
-  const { wishlist, setWishlist, wishQuantity } = useWishlistStore();
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [categories, setCategories] = useState<Category[]>([]);
+  
+  // Vérifier si l'utilisateur est admin
+  const isAdmin = session?.user?.role === "admin";
+  const isLoggedIn = !!session;
 
-  const handleLogout = () => {
-    setTimeout(() => signOut(), 1000);
-    toast.success("Logout successful!");
-  };
-
-  // getting all wishlist items by user id
-  const getWishlistByUserId = async (id: string) => {
-    const response = await apiClient.get(`/api/wishlist/${id}`, {
-      cache: "no-store",
-    });
-    const wishlist = await response.json();
-    const productArray: {
-      id: string;
-      title: string;
-      price: number;
-      image: string;
-      slug:string
-      stockAvailabillity: number;
-    }[] = [];
-    
-    wishlist.map((item: any) => productArray.push({id: item?.product?.id, title: item?.product?.title, price: item?.product?.price, image: item?.product?.mainImage, slug: item?.product?.slug, stockAvailabillity: item?.product?.inStock}));
-    
-    setWishlist(productArray);
-  };
-
-  // getting user by email so I can get his user id
-  const getUserByEmail = async () => {
-    if (session?.user?.email) {
-      
-      apiClient.get(`/api/users/email/${session?.user?.email}`, {
-        cache: "no-store",
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          getWishlistByUserId(data?.id);
-        });
+  // Fonction de déconnexion
+  const handleSignOut = async () => {
+    try {
+      await signOut({ 
+        redirect: false,
+        callbackUrl: "/"
+      });
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
     }
   };
 
   useEffect(() => {
-    getUserByEmail();
-  }, [session?.user?.email, wishlist.length]);
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+
+  if (pathname.startsWith("/admin")) {
+    return (
+      <header className="bg-brand-bg-secondary shadow-sm sticky top-0 z-40">
+        <div className="flex justify-between h-20 items-center px-8 max-w-screen-2xl mx-auto">
+          <Link href="/admin">
+            <span className="font-serif font-semibold text-2xl text-brand-text-primary tracking-wider uppercase">
+              TALLEL TEXTILE
+            </span>
+          </Link>
+          <div className="flex gap-x-6 items-center">
+            <Link href="/admin" className="font-sans text-brand-text-primary hover:text-brand-primary transition-colors">
+              Tableau de bord
+            </Link>
+            <Link 
+              href="/" 
+              className="font-sans text-brand-text-primary hover:text-brand-primary transition-colors"
+            >
+              Boutique
+            </Link>
+            {isLoggedIn && (
+              <button
+                onClick={handleSignOut}
+                className="font-sans text-brand-text-primary hover:text-brand-primary transition-colors"
+              >
+                Déconnexion
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
-    <header className="bg-white">
+    <header className="bg-brand-bg-secondary sticky top-0 z-40">
       <HeaderTop />
-      {pathname.startsWith("/admin") === false && (
-        <div className="h-32 bg-white flex items-center justify-between px-16 max-[1320px]:px-16 max-md:px-6 max-lg:flex-col max-lg:gap-y-7 max-lg:justify-center max-lg:h-60 max-w-screen-2xl mx-auto">
+      <div className="h-24 bg-brand-bg-secondary flex items-center justify-between px-12 max-w-screen-2xl mx-auto max-md:px-6">
+        {/* Left: Navigation */}
+        <nav className="hidden lg:flex items-center gap-x-8">
+          <NavLink href="/shop">Boutique</NavLink>
+          {categories.map((category) => (
+            <NavLink key={category.id} href={category.href}>
+              {category.title}
+            </NavLink>
+          ))}
+          <NavLink href="/about">À propos</NavLink>
+        </nav>
+        <div className="lg:hidden"></div> {/* Spacer for mobile */}
+
+        {/* Center: Logo */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <Link href="/">
-            <img src="/logo v1 svg.svg" width={300} height={300} alt="singitronic logo" className="relative right-5 max-[1023px]:w-56" />
+            <span className="font-serif font-semibold text-3xl text-brand-text-primary tracking-wider uppercase max-lg:text-2xl">
+              TALLEL TEXTILE
+            </span>
           </Link>
-          <SearchInput />
-          <div className="flex gap-x-10 items-center">
-            <NotificationBell />
-            <HeartElement wishQuantity={wishQuantity} />
-            <CartElement />
-          </div>
         </div>
-      )}
-      {pathname.startsWith("/admin") === true && (
-        <div className="flex justify-between h-32 bg-white items-center px-16 max-[1320px]:px-10  max-w-screen-2xl mx-auto max-[400px]:px-5">
-          <Link href="/">
-            <Image
-              src="/logo v1.png"
-              width={130}
-              height={130}
-              alt="singitronic logo"
-              className="w-56 h-auto"
-            />
-          </Link>
-          <div className="flex gap-x-5 items-center">
-            <NotificationBell />
-            <div className="dropdown dropdown-end">
-              <div tabIndex={0} role="button" className="w-10">
-                <Image
-                  src="/randomuser.jpg"
-                  alt="random profile photo"
-                  width={30}
-                  height={30}
-                  className="w-full h-full rounded-full"
-                />
-              </div>
-              <ul
-                tabIndex={0}
-                className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
-              >
-                <li>
-                  <Link href="/admin">Dashboard</Link>
-                </li>
-                <li>
-                  <a>Profile</a>
-                </li>
-                <li onClick={handleLogout}>
-                  <a href="#">Logout</a>
-                </li>
-              </ul>
-            </div>
-          </div>
+
+        {/* Right: Icons */}
+        <div className="flex gap-x-6 items-center">
+          <button className="text-2xl hover:text-brand-primary transition-colors"><FaSearch /></button>
+          <CartElement />
+          {/* Lien Admin - visible uniquement pour les admins connectés */}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="nav-link"
+            >
+              Admin
+            </Link>
+          )}
+          {/* Bouton de déconnexion - visible si connecté */}
+          {isLoggedIn && (
+            <button
+              onClick={handleSignOut}
+              className="nav-link"
+            >
+              Déconnexion
+            </button>
+          )}
         </div>
-      )}
+      </div>
     </header>
   );
 };

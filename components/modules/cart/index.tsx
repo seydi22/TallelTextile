@@ -7,6 +7,8 @@ import Link from "next/link";
 import { FaCheck, FaCircleQuestion, FaClock, FaXmark } from "react-icons/fa6";
 import QuantityInputCart from "@/components/QuantityInputCart";
 import { sanitize } from "@/lib/sanitize";
+import { formatPriceMRU } from "@/lib/formatPrice";
+import { getImageUrl } from "@/utils/imageUtils";
 
 export const CartModule = () => {
 
@@ -16,14 +18,14 @@ export const CartModule = () => {
   const handleRemoveItem = (id: string) => {
     removeFromCart(id);
     calculateTotals();
-    toast.success("Product removed from the cart");
+    toast.success("Produit retiré du panier");
   };
   return (
 
     <form className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
       <section aria-labelledby="cart-heading" className="lg:col-span-7">
         <h2 id="cart-heading" className="sr-only">
-          Items in your shopping cart
+          Articles dans votre panier
         </h2>
 
         <ul
@@ -36,8 +38,8 @@ export const CartModule = () => {
                 <Image
                   width={192}
                   height={192}
-                  src={product?.image ? `/${product.image}` : "/product_placeholder.jpg"}
-                  alt="laptop image"
+                  src={getImageUrl(product?.image)}
+                  alt={product?.title || "Image du produit"}
                   className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
                 />
               </div>
@@ -62,7 +64,7 @@ export const CartModule = () => {
                         ) : null}
                       </div> */}
                     <p className="mt-1 text-sm font-medium text-gray-900">
-                      ${product.price}
+                      {formatPriceMRU(product.price)}
                     </p>
                   </div>
 
@@ -74,7 +76,7 @@ export const CartModule = () => {
                         type="button"
                         className="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500"
                       >
-                        <span className="sr-only">Remove</span>
+                        <span className="sr-only">Retirer</span>
                         <FaXmark className="h-5 w-5" aria-hidden="true" />
                       </button>
                     </div>
@@ -94,7 +96,7 @@ export const CartModule = () => {
                     />
                   )}
 
-                  <span>{1 ? "In stock" : `Ships in 3 days`}</span>
+                  <span>{1 ? "En stock" : `Expédition sous 3 jours`}</span>
                 </p>
               </div>
             </li>
@@ -111,25 +113,25 @@ export const CartModule = () => {
           id="summary-heading"
           className="text-lg font-medium text-gray-900"
         >
-          Order summary
+          Résumé de la commande
         </h2>
 
         <dl className="mt-6 space-y-4">
           <div className="flex items-center justify-between">
-            <dt className="text-sm text-gray-600">Subtotal</dt>
+            <dt className="text-sm text-gray-600">Sous-total</dt>
             <dd className="text-sm font-medium text-gray-900">
-              ${total}
+              {formatPriceMRU(total)}
             </dd>
           </div>
           <div className="flex items-center justify-between border-t border-gray-200 pt-4">
             <dt className="flex items-center text-sm text-gray-600">
-              <span>Shipping estimate</span>
+              <span>Estimation de livraison</span>
               <a
                 href="#"
                 className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
               >
                 <span className="sr-only">
-                  Learn more about how shipping is calculated
+                  En savoir plus sur le calcul de la livraison
                 </span>
                 <FaCircleQuestion
                   className="h-5 w-5"
@@ -137,17 +139,17 @@ export const CartModule = () => {
                 />
               </a>
             </dt>
-            <dd className="text-sm font-medium text-gray-900">$5.00</dd>
+            <dd className="text-sm font-medium text-gray-900">{formatPriceMRU(5)}</dd>
           </div>
           <div className="flex items-center justify-between border-t border-gray-200 pt-4">
             <dt className="flex text-sm text-gray-600">
-              <span>Tax estimate</span>
+              <span>Estimation des taxes</span>
               <a
                 href="#"
                 className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
               >
                 <span className="sr-only">
-                  Learn more about how tax is calculated
+                  En savoir plus sur le calcul des taxes
                 </span>
                 <FaCircleQuestion
                   className="h-5 w-5"
@@ -156,15 +158,15 @@ export const CartModule = () => {
               </a>
             </dt>
             <dd className="text-sm font-medium text-gray-900">
-              ${total / 5}
+              {formatPriceMRU(total / 5)}
             </dd>
           </div>
           <div className="flex items-center justify-between border-t border-gray-200 pt-4">
             <dt className="text-base font-medium text-gray-900">
-              Order total
+              Total de la commande
             </dt>
             <dd className="text-base font-medium text-gray-900">
-              ${total === 0 ? 0 : Math.round(total + total / 5 + 5)}
+              {formatPriceMRU(total === 0 ? 0 : Math.round(total + total / 5 + 5))}
             </dd>
           </div>
         </dl>
@@ -172,9 +174,9 @@ export const CartModule = () => {
           <div className="mt-6">
             <Link
               href="/checkout"
-              className="block flex justify-center items-center w-full uppercase bg-white px-4 py-3 text-base border border-black border-gray-300 font-bold text-blue-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
+              className="block flex justify-center items-center w-full uppercase bg-brand-secondary px-4 py-3 text-base border border-transparent font-serif font-semibold text-white shadow-sm hover:bg-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 transition-colors duration-300"
             >
-              <span>Checkout</span>
+              <span>Passer la commande</span>
             </Link>
           </div>
         )}

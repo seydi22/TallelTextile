@@ -1,19 +1,10 @@
-// *********************
-// Role of the component: Filters on shop page
-// Name of the component: Filters.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <Filters />
-// Input parameters: no input parameters
-// Output: stock, rating and price filter
-// *********************
-
 "use client";
 import React, { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useSortStore } from "@/app/_zustand/sortStore";
 import { usePaginationStore } from "@/app/_zustand/paginationStore";
+import { formatPriceMRU } from "@/lib/formatPrice";
 
 interface InputCategory {
   inStock: { text: string, isChecked: boolean },
@@ -22,8 +13,17 @@ interface InputCategory {
   ratingFilter: { text: string, value: number },
 }
 
+interface Category {
+  id: string;
+  title: string;
+  href: string; // e.g., /shop/category-slug
+  bgImage: string;
+}
+
 const Filters = () => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { push } = useRouter(); // Use push for navigation to update path
   const { replace } = useRouter();
 
   // getting current page number from Zustand store
@@ -37,21 +37,113 @@ const Filters = () => {
   });
   const { sortBy } = useSortStore();
 
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
+
+  // Extract current category from pathname, e.g., /shop/some-category -> some-category
+  const currentPathSegments = pathname.split('/').filter(Boolean);
+  const currentCategorySlug = currentPathSegments.length > 1 && currentPathSegments[0] === 'shop'
+    ? currentPathSegments[1]
+    : null;
+
   useEffect(() => {
-    const params = new URLSearchParams();
-    // setting URL params and after that putting them all in URL
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/categories");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: Category[] = await response.json();
+        setCategories(data);
+      } catch (e: any) {
+        setCategoriesError(e.message);
+        console.error("Failed to fetch categories:", e);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []); // Empty dependency array means this runs once on mount
+
+  useEffect(() => {
+    // Skip updating URL if categories are still loading or there's an error
+    if (loadingCategories || categoriesError) return;
+
+    const params = new URLSearchParams(searchParams.toString()); // Preserve existing search params
+    
+    // Update availability, price, rating, sort, and page
     params.set("outOfStock", inputCategory.outOfStock.isChecked.toString());
     params.set("inStock", inputCategory.inStock.isChecked.toString());
     params.set("rating", inputCategory.ratingFilter.value.toString());
     params.set("price", inputCategory.priceFilter.value.toString());
     params.set("sort", sortBy);
     params.set("page", page.toString());
-    replace(`${pathname}?${params}`);
-  }, [inputCategory, sortBy, page]);
+
+    // Construct new path based on selected category
+    let newPath = "/shop";
+    if (currentCategorySlug) {
+      newPath = `/shop/${currentCategorySlug}`;
+    }
+    
+    replace(`${newPath}?${params.toString()}`);
+  }, [inputCategory, sortBy, page, currentCategorySlug, searchParams, replace, loadingCategories, categoriesError]);
+
+  const handleCategoryClick = (categorySlug: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    let newPath = "/shop";
+
+    if (categorySlug) {
+      newPath = `/shop/${categorySlug}`;
+    } else {
+      // If "All Categories" is clicked, clear category from path
+      // Also clear any category-specific search params if they exist, though not currently implemented.
+    }
+    // Reset page to 1 when changing category
+    params.set("page", "1");
+    push(`${newPath}?${params.toString()}`);
+  };
 
   return (
     <div>
       <h3 className="text-2xl mb-2">Filters</h3>
+      <div className="divider"></div>
+
+      <div className="flex flex-col gap-y-1 mb-4">
+        <h3 className="text-xl mb-2">Categories</h3>
+        {loadingCategories && <p>Loading categories...</p>}
+        {categoriesError && <p className="text-red-500">Error: {categoriesError}</p>}
+        {!loadingCategories && !categoriesError && (
+          <ul className="space-y-1">
+            <li>
+              <button
+                onClick={() => handleCategoryClick(null)}
+                className={`w-full text-left py-1 px-2 rounded-md ${
+                  !currentCategorySlug ? 'bg-blue-100 text-blue-800 font-semibold' : 'hover:bg-gray-100'
+                }`}
+              >
+                All Products
+              </button>
+            </li>
+            {categories.map((cat) => (
+              <li key={cat.id}>
+                <button
+                  onClick={() => handleCategoryClick(cat.title.toLowerCase().replace(/\s+/g, '-'))}
+                  className={`w-full text-left py-1 px-2 rounded-md ${
+                    currentCategorySlug === cat.title.toLowerCase().replace(/\s+/g, '-')
+                      ? 'bg-blue-100 text-blue-800 font-semibold'
+                      : 'hover:bg-gray-100'
+                  }`}
+                >
+                  {cat.title}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div className="divider"></div>
       <div className="flex flex-col gap-y-1">
         <h3 className="text-xl mb-2">Availability</h3>
@@ -119,7 +211,7 @@ const Filters = () => {
               })
             }
           />
-          <span>{`Max price: $${inputCategory.priceFilter.value}`}</span>
+          <span>{`Prix max: ${formatPriceMRU(inputCategory.priceFilter.value)}`}</span>
         </div>
       </div>
 

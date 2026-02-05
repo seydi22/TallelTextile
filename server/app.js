@@ -66,6 +66,10 @@ const allowedOrigins = [
   'http://localhost:3001',
   process.env.NEXTAUTH_URL,
   process.env.FRONTEND_URL,
+  // Support pour Vercel (URLs dynamiques)
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+  // Ajoutez votre URL Vercel spécifique après le premier déploiement
+  // Exemple: 'https://votre-projet.vercel.app',
 ].filter(Boolean); // Remove undefined values
 
 // CORS configuration with origin validation
@@ -170,9 +174,55 @@ app.use((err, req, res, next) => {
   handleServerError(err, res, `${req.method} ${req.path}`);
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log('Rate limiting and request logging enabled for all endpoints');
-  console.log('Logs are being written to server/logs/ directory');
-});
+// Export pour Vercel Serverless Functions
+// Ne démarrer le serveur que si le fichier est exécuté directement (pas importé)
+if (require.main === module) {
+  const PORT = process.env.PORT || 3001;
+
+  // Vérifier que DATABASE_URL est configuré avant de démarrer
+  if (!process.env.DATABASE_URL) {
+    console.error('❌ Erreur: DATABASE_URL n\'est pas configuré dans le fichier .env');
+    console.error('💡 Assurez-vous d\'avoir un fichier .env dans le dossier server/ avec DATABASE_URL');
+    console.error('   Exemple: DATABASE_URL="mongodb://localhost:27017/singitronic_nextjs"');
+    process.exit(1);
+  }
+
+  const server = app.listen(PORT, () => {
+    console.log('\n✅ ========================================');
+    console.log(`✅ Serveur backend démarré sur le port ${PORT}`);
+    console.log('✅ ========================================');
+    console.log(`🌐 URL: http://localhost:${PORT}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/health`);
+    console.log('🔒 Rate limiting et logging activés');
+    console.log('📝 Logs écrits dans: server/logs/');
+    console.log('✅ ========================================\n');
+  });
+
+  // Gestion des erreurs de démarrage
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`\n❌ Erreur: Le port ${PORT} est déjà utilisé`);
+      console.error('💡 Solutions:');
+      console.error('   1. Arrêtez l\'autre processus utilisant ce port');
+      console.error('   2. Ou changez le port dans .env: PORT=3002\n');
+      process.exit(1);
+    } else {
+      console.error('❌ Erreur lors du démarrage du serveur:', error);
+      process.exit(1);
+    }
+  });
+
+  // Gestion des erreurs de démarrage
+  process.on('uncaughtException', (error) => {
+    console.error('❌ Erreur non gérée:', error);
+    process.exit(1);
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Promesse rejetée non gérée:', reason);
+    process.exit(1);
+  });
+}
+
+// Export pour Vercel Serverless Functions
+module.exports = app;

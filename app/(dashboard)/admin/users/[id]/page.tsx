@@ -157,7 +157,7 @@ const DashboardSingleUserPage = ({ params }: DashboardUserDetailsProps) => {
         <div className="flex gap-x-2 max-sm:flex-col">
           <button
             type="button"
-            className="uppercase bg-blue-500 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2"
+            className="uppercase bg-brand-secondary px-10 py-5 text-lg border border-brand-primary font-bold text-white shadow-sm hover:bg-brand-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors duration-300"
             onClick={updateUser}
           >
             Update user

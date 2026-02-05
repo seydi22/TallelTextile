@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../utills/db");
 
 async function getAllMerchants(request, response) {
   try {
@@ -41,6 +40,10 @@ async function getMerchantById(request, response) {
 async function createMerchant(request, response) {
   try {
     const { name, email, phone, address, description, status } = request.body;
+
+    if (!name) {
+      return response.status(400).json({ error: "Merchant name is required." });
+    }
 
     const merchant = await prisma.merchant.create({
       data: {
