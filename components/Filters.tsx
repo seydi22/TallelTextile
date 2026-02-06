@@ -50,11 +50,14 @@ const Filters = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        // Utiliser apiClient pour utiliser la bonne URL de base (backend)
+        const apiClient = (await import('@/lib/api')).default;
+        
         // Ajouter un timeout pour éviter les blocages
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
         
-        const response = await fetch("/api/categories", {
+        const response = await apiClient.get("/api/categories", {
           signal: controller.signal,
         });
         

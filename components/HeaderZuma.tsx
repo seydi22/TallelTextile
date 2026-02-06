@@ -16,6 +16,7 @@ import { FaSearch, FaBars, FaTimes } from "react-icons/fa";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import CartElement from "./CartElement";
+import apiClient from "@/lib/api";
 
 interface Category {
   id: string;
@@ -52,7 +53,8 @@ const HeaderZuma = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/categories');
+        // Utiliser apiClient pour utiliser la bonne URL de base (backend)
+        const response = await apiClient.get('/api/categories');
         const data = await response.json();
         if (Array.isArray(data)) {
           setCategories(data);

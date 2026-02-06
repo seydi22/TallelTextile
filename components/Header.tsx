@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import HeaderTop from "./HeaderTop";
 import Link from "next/link";
 import { FaSearch } from "react-icons/fa";
-
+import apiClient from "@/lib/api";
 import CartElement from "./CartElement";
 
 const NavLink = ({ href, children, isActive }: { href: string, children: React.ReactNode, isActive?: boolean }) => (
@@ -61,7 +61,8 @@ const Header = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/categories');
+        // Utiliser apiClient pour utiliser la bonne URL de base (backend)
+        const response = await apiClient.get('/api/categories');
         const data = await response.json();
         if (Array.isArray(data)) {
           setCategories(data);
