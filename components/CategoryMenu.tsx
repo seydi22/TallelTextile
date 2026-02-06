@@ -41,20 +41,28 @@ const CategoryMenu = () => {
           throw new Error(data.error);
         }
         
-        if (Array.isArray(data)) {
-          if (data.length > 0) {
-            setCategories(data);
-            console.log(`✅ Loaded ${data.length} categories:`, data);
+        // Handle both array format and object format (for backward compatibility)
+        let categoriesArray = data;
+        if (!Array.isArray(data)) {
+          // If it's an object with categories property (debug mode)
+          if (data.categories && Array.isArray(data.categories)) {
+            categoriesArray = data.categories;
           } else {
-            console.warn("⚠️ No categories found in response");
+            setError("Format de données invalide reçu du serveur.");
+            console.error(
+              "❌ Data received from /api/categories is not an array:",
+              data
+            );
             setCategories([]);
+            return;
           }
+        }
+        
+        if (categoriesArray.length > 0) {
+          setCategories(categoriesArray);
+          console.log(`✅ Loaded ${categoriesArray.length} categories:`, categoriesArray);
         } else {
-          setError("Format de données invalide reçu du serveur.");
-          console.error(
-            "❌ Data received from /api/categories is not an array:",
-            data
-          );
+          console.warn("⚠️ No categories found in response");
           setCategories([]);
         }
       } catch (e: any) {

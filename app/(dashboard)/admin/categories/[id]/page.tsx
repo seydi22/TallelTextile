@@ -49,7 +49,10 @@ const DashboardSingleCategory = ({ params }: DashboardSingleCategoryProps) => {
     try {
       // En production Vercel, utiliser des URLs relatives (chaîne vide)
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || (typeof window !== 'undefined' ? '' : 'http://localhost:3001');
-      const response = await fetch(`${apiBaseUrl}/api/main-image`, {
+      const uploadUrl = `${apiBaseUrl}/api/main-image`;
+      console.log(`📤 [Upload] API Base URL: ${apiBaseUrl || 'URLs relatives'}`);
+      console.log(`📤 [Upload] Upload URL: ${uploadUrl}`);
+      const response = await fetch(uploadUrl, {
         method: "POST",
         body: formData,
       });

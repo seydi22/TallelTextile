@@ -7,6 +7,11 @@ export const apiClient = {
     // Utiliser l'URL de base ou une URL relative si baseUrl est vide (production Vercel)
     const url = this.baseUrl ? `${this.baseUrl}${endpoint}` : endpoint;
     
+    // Logger l'URL complète utilisée (uniquement en développement ou si explicitement demandé)
+    if (process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEBUG_API === 'true') {
+      console.log(`🌐 [API Request] ${options.method || 'GET'} ${url}`);
+    }
+    
     const defaultOptions: RequestInit = {
       headers: {
         'Content-Type': 'application/json',

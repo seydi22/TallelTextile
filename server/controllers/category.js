@@ -182,12 +182,18 @@ const getAllCategories = asyncHandler(async (request, response) => {
     };
   }
 
-  // The frontend expects an array, but for debugging, we are temporarily
-  // changing the response. The user will see this in the browser's network tab.
-  return response.json({
-    categories: categories,
-    _debug: debug_info,
-  });
+  // Le frontend attend un tableau directement
+  // Gérer le cas où il y a une erreur de connexion
+  if (debug_info.connection_error) {
+    console.error("❌ [getAllCategories] Database connection error:", debug_info.connection_error);
+    return response.status(500).json({
+      error: "Database connection error",
+      message: debug_info.connection_error.message,
+    });
+  }
+  
+  // Retourner le tableau de catégories
+  return response.json(categories);
 });
 
 module.exports = {
