@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api";
 import { toast } from "react-hot-toast";
+import { formatPriceMRU } from "@/lib/formatPrice";
 
 interface Product {
   id: string;

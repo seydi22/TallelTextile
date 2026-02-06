@@ -8,7 +8,7 @@ import HeaderZuma from "@/components/HeaderZuma";
 import Footer from "@/components/Footer";
 import Providers from "@/Providers";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 
 const inter = Inter({
   subsets: ["latin"],
