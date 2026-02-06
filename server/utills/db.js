@@ -56,9 +56,19 @@ const getPrisma = () => {
 
 // Export a getter function instead of the instance directly
 // This ensures Prisma is only initialized when actually used
-module.exports = new Proxy({}, {
+// Wrapper pour gérer les méthodes asynchrones correctement
+const prismaProxy = new Proxy({}, {
   get(target, prop) {
     const prisma = getPrisma();
-    return prisma[prop];
+    const value = prisma[prop];
+    
+    // Si c'est une fonction, la binder à l'instance prisma
+    if (typeof value === 'function') {
+      return value.bind(prisma);
+    }
+    
+    return value;
   }
-});;
+});
+
+module.exports = prismaProxy;;
