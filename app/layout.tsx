@@ -33,21 +33,26 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Gérer les erreurs de session gracieusement
+  // Gérer les erreurs de session gracieusement avec timeout
   let session = null;
   try {
-    session = await getServerSession(authOptions);
+    // Ajouter un timeout pour éviter les blocages
+    const sessionPromise = getServerSession(authOptions);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Session timeout')), 2000)
+    );
+    
+    session = await Promise.race([sessionPromise, timeoutPromise]) as any;
   } catch (error: any) {
-    // Si erreur de décryptage JWT, ignorer silencieusement (session invalide)
-    // Cela peut arriver si NEXTAUTH_SECRET a changé ou si les cookies sont corrompus
-    if (error?.message?.includes("decryption") || error?.code === "ERR_JWT_DECRYPTION_FAILED") {
+    // Si timeout ou erreur, continuer sans session
+    if (error?.message?.includes("timeout")) {
+      console.warn("Timeout lors de la récupération de la session, continuation sans session");
+    } else if (error?.message?.includes("decryption") || error?.code === "ERR_JWT_DECRYPTION_FAILED") {
       console.warn("Session invalide, l'utilisateur devra se reconnecter");
-      session = null;
     } else {
-      // Pour les autres erreurs, les logger mais continuer
       console.error("Erreur lors de la récupération de la session:", error?.message || error);
-      session = null;
     }
+    session = null;
   }
   
   return (
