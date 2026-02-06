@@ -13,7 +13,8 @@ import { usePathname } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { FaSearch, FaBars, FaTimes } from "react-icons/fa";
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
+import { useSafeSession } from "@/hooks/useSafeSession";
 import { useRouter } from "next/navigation";
 import CartElement from "./CartElement";
 import apiClient from "@/lib/api";
@@ -26,15 +27,9 @@ interface Category {
 
 const HeaderZuma = () => {
   const pathname = usePathname();
-  // Protéger contre les erreurs de destructuration
-  let session = null;
-  try {
-    const sessionResult = useSession();
-    session = sessionResult?.data || null;
-  } catch (error) {
-    console.error('Erreur lors de la récupération de la session:', error);
-    session = null;
-  }
+  // Utiliser le hook sécurisé pour éviter les erreurs de destructuration
+  const sessionResult = useSafeSession();
+  const session = sessionResult?.data || null;
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
