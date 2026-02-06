@@ -69,9 +69,12 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-change-in-production",
   // Définir NEXTAUTH_URL explicitement pour éviter les avertissements
-  ...(process.env.NEXTAUTH_URL && {
+  // En production Vercel, utiliser VERCEL_URL si NEXTAUTH_URL n'est pas défini
+  ...(process.env.NEXTAUTH_URL ? {
     url: process.env.NEXTAUTH_URL,
-  }),
+  } : process.env.VERCEL_URL ? {
+    url: `https://${process.env.VERCEL_URL}`,
+  } : {}),
   // Avertir si NEXTAUTH_SECRET n'est pas défini en production
   ...(process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET && {
     debug: true, // Activer le debug pour voir les avertissements
@@ -79,4 +82,6 @@ export const authOptions: NextAuthOptions = {
   // Configuration pour éviter les erreurs de contexte
   debug: process.env.NODE_ENV === "development",
   useSecureCookies: process.env.NODE_ENV === "production",
+  // Configuration pour éviter les erreurs de contexte côté client
+  trustHost: true, // Nécessaire pour Vercel
 };
