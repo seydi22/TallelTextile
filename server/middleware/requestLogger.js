@@ -29,16 +29,18 @@ const errorLogStream = fs.createWriteStream(
 );
 
 // Middleware to add request ID
-const { nanoid } = require('nanoid');
+// Use crypto for generating IDs (built-in, no dependencies)
+const crypto = require('crypto');
 
 const addRequestId = (req, res, next) => {
   try {
-    req.reqId = nanoid(8);
+    // Generate a random 8-character ID using crypto
+    req.reqId = crypto.randomBytes(4).toString('hex');
     res.setHeader('X-Request-ID', req.reqId);
     next();
   } catch (error) {
     console.error('Error generating request ID:', error);
-    // Fallback ID
+    // Fallback ID using Math.random
     req.reqId = Math.random().toString(36).substr(2, 8);
     res.setHeader('X-Request-ID', req.reqId);
     next();
