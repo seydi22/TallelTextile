@@ -42,7 +42,9 @@ export default async function RootLayout({
       setTimeout(() => reject(new Error('Session timeout')), 2000)
     );
     
-    session = await Promise.race([sessionPromise, timeoutPromise]) as any;
+    const result = await Promise.race([sessionPromise, timeoutPromise]);
+    // S'assurer que le résultat est bien une session ou null
+    session = result && typeof result === 'object' ? result : null;
   } catch (error: any) {
     // Si timeout ou erreur, continuer sans session
     if (error?.message?.includes("timeout")) {
