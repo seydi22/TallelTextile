@@ -17,7 +17,8 @@ const DashboardNewCategoryPage = () => {
     formData.append("uploadedFile", file);
 
     try {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+      // En production Vercel, utiliser des URLs relatives (chaîne vide)
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || (typeof window !== 'undefined' ? '' : 'http://localhost:3001');
       const response = await fetch(`${apiBaseUrl}/api/main-image`, {
         method: "POST",
         body: formData,
