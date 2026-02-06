@@ -308,7 +308,7 @@ const AddNewProduct = () => {
             </select>
             {(!Array.isArray(categories) || categories.length === 0) && (
               <span className="text-xs text-red-500 mt-1">
-                Aucune catégorie disponible. Veuillez créer une catégorie d'abord.
+                Aucune catégorie disponible. Veuillez créer une catégorie d&apos;abord.
               </span>
             )}
           </label>
