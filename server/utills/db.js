@@ -15,7 +15,13 @@ const prismaClientSingleton = () => {
     }
 
     // Parse DATABASE_URL to check SSL configuration
-    const databaseUrl = process.env.DATABASE_URL;
+    // Remove quotes if present (common issue with Vercel env vars)
+    let databaseUrl = process.env.DATABASE_URL.trim();
+    if ((databaseUrl.startsWith('"') && databaseUrl.endsWith('"')) || 
+        (databaseUrl.startsWith("'") && databaseUrl.endsWith("'"))) {
+        databaseUrl = databaseUrl.slice(1, -1);
+    }
+    
     const url = new URL(databaseUrl);
     
     // Log SSL configuration for debugging
