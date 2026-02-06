@@ -1,5 +1,25 @@
 const prisma = require("../utills/db"); // ✅ Use shared connection
-const cloudinary = require('cloudinary').v2;
+
+// Load cloudinary - try multiple paths for Vercel compatibility
+let cloudinary;
+try {
+  // First try: root node_modules (Vercel structure)
+  cloudinary = require('../../node_modules/cloudinary').v2;
+} catch (e) {
+  try {
+    // Second try: relative path from server
+    cloudinary = require('../../../node_modules/cloudinary').v2;
+  } catch (e2) {
+    try {
+      // Third try: standard require (local dev or if installed in server/node_modules)
+      cloudinary = require('cloudinary').v2;
+    } catch (e3) {
+      console.error('❌ Erreur: cloudinary n\'est pas installé');
+      console.error('💡 Assurez-vous que cloudinary est dans les dependencies du package.json racine');
+      throw new Error('cloudinary module not found. Please add it to package.json dependencies.');
+    }
+  }
+}
 
 // Configuration Cloudinary
 cloudinary.config({
