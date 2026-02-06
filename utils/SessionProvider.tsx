@@ -8,8 +8,11 @@ interface CustomSessionProviderProps {
 }
 
 const SessionProvider = ({ children, session }: CustomSessionProviderProps) => {
+  // S'assurer que session est bien un objet ou null, jamais undefined
+  const safeSession = session && typeof session === 'object' ? session : null;
+  
   return (
-    <NextAuthSessionProvider session={session}>
+    <NextAuthSessionProvider session={safeSession}>
       {children}
     </NextAuthSessionProvider>
   );
