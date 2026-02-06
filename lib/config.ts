@@ -1,8 +1,28 @@
+const getApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+  
+  if (typeof window !== 'undefined') {
+    // Côté client : URLs relatives (même projet Vercel)
+    return '';
+  }
+  
+  // Côté serveur : localhost en développement
+  return 'http://localhost:3001';
+};
+
+const apiBaseUrl = getApiBaseUrl();
+
+// Logger l'URL de base utilisée (uniquement côté client pour éviter les logs serveur)
+if (typeof window !== 'undefined') {
+  const displayUrl = apiBaseUrl || window.location.origin;
+  console.log(`🔗 [API Config] Base URL utilisée: ${displayUrl}`);
+  console.log(`🔗 [API Config] NEXT_PUBLIC_API_BASE_URL: ${process.env.NEXT_PUBLIC_API_BASE_URL || 'non défini (URLs relatives)'}`);
+}
+
 const config = {
-  // Si NEXT_PUBLIC_API_BASE_URL est défini (projet backend séparé), l'utiliser
-  // Sinon, utiliser des URLs relatives (même projet) ou localhost (développement)
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 
-    (typeof window !== 'undefined' ? '' : 'http://localhost:3001'), // URLs relatives côté client si même projet, localhost côté serveur
+  apiBaseUrl,
   nextAuthUrl: process.env.NEXTAUTH_URL || 'http://localhost:3000',
 };
 
