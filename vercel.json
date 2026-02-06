@@ -2,7 +2,7 @@
   "version": 2,
   "routes": [
     {
-      "src": "/api/(products|categories|images|main-image|users|search|orders|order-product|slugs|notifications|merchants|bulk-upload|health|rate-limit-info)(.*)",
+      "src": "/api/(.*)",
       "dest": "/api/vercel-serverless.js"
     },
     {
