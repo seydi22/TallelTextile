@@ -24,12 +24,10 @@ if (!process.env.DATABASE_URL) {
   console.error('💡 Assurez-vous d\'avoir configuré DATABASE_URL dans les variables d\'environnement Vercel');
 }
 
-// S'assurer que Prisma Client est généré
+// S'assurer que Prisma Client est disponible (sans créer d'instance)
 try {
-  const { PrismaClient } = require('@prisma/client');
-  // Tester la connexion Prisma
-  const testPrisma = new PrismaClient();
-  console.log('✅ Prisma Client chargé avec succès');
+  require('@prisma/client');
+  console.log('✅ Prisma Client disponible');
 } catch (prismaError) {
   console.error('❌ Erreur Prisma:', prismaError.message);
   console.error('💡 Assurez-vous que "prisma generate" a été exécuté dans le script de build');

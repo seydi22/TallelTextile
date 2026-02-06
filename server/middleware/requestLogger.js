@@ -29,9 +29,10 @@ const errorLogStream = fs.createWriteStream(
 );
 
 // Middleware to add request ID
-const addRequestId = async (req, res, next) => {
+const { nanoid } = require('nanoid');
+
+const addRequestId = (req, res, next) => {
   try {
-    const { nanoid } = await import('nanoid');
     req.reqId = nanoid(8);
     res.setHeader('X-Request-ID', req.reqId);
     next();
