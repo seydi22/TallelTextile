@@ -66,10 +66,12 @@ const allowedOrigins = [
   'http://localhost:3001',
   process.env.NEXTAUTH_URL,
   process.env.FRONTEND_URL,
-  // Support pour Vercel (URLs dynamiques)
+  // Support pour Vercel (URLs dynamiques du backend)
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-  // Ajoutez votre URL Vercel spécifique après le premier déploiement
-  // Exemple: 'https://votre-projet.vercel.app',
+  // Support pour frontend Vercel séparé (ajoutez l'URL de votre frontend)
+  // Exemple: 'https://votre-frontend.vercel.app',
+  // Vous pouvez aussi utiliser une variable d'environnement FRONTEND_VERCEL_URL
+  process.env.FRONTEND_VERCEL_URL,
 ].filter(Boolean); // Remove undefined values
 
 // CORS configuration with origin validation
@@ -88,8 +90,14 @@ const corsOptions = {
       return callback(null, true);
     }
     
+    // En production Vercel, autoriser les URLs Vercel du frontend
+    if (process.env.VERCEL && origin.includes('.vercel.app')) {
+      return callback(null, true);
+    }
+    
     // Reject other origins
     const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    console.warn(`CORS blocked origin: ${origin}`);
     return callback(new Error(msg), false);
   },
   methods: ["GET", "POST", "PUT", "DELETE"],
