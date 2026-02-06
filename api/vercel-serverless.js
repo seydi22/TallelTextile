@@ -54,4 +54,21 @@ try {
 }
 
 // Export pour Vercel Serverless Functions
-module.exports = app;
+// Vercel attend un handler qui prend (req, res)
+// Express app peut être utilisé directement comme handler
+// Mais il faut s'assurer que le chemin de la requête est correct
+
+// Wrapper pour logger les requêtes entrantes (debug)
+const originalHandler = app;
+const handler = (req, res) => {
+  // Logger pour debug (peut être retiré en production)
+  if (process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'development') {
+    console.log(`[Vercel Handler] ${req.method} ${req.url}`);
+    console.log(`[Vercel Handler] Original path: ${req.url}`);
+  }
+  
+  // Passer la requête à Express
+  return originalHandler(req, res);
+};
+
+module.exports = handler;
