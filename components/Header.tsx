@@ -37,8 +37,14 @@ interface Category {
 const Header = () => {
   const pathname = usePathname();
   // Protéger contre les erreurs de destructuration
-  const sessionResult = useSession();
-  const session = sessionResult?.data || null;
+  let session = null;
+  try {
+    const sessionResult = useSession();
+    session = sessionResult?.data || null;
+  } catch (error) {
+    console.error('Erreur lors de la récupération de la session:', error);
+    session = null;
+  }
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   
