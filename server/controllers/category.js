@@ -136,64 +136,45 @@ const getCategory = asyncHandler(async (request, response) => {
 });
 
 const getAllCategories = asyncHandler(async (request, response) => {
-  const debug_info = {};
-
-  debug_info.database_url_is_set = !!process.env.DATABASE_URL;
-  if (process.env.DATABASE_URL) {
-    try {
-      const url = new URL(process.env.DATABASE_URL);
-      debug_info.database_host = url.hostname;
-      debug_info.database_port = url.port;
-      debug_info.database_user = url.username;
-      debug_info.database_name = url.pathname.substring(1);
-    } catch (e) {
-      debug_info.database_url_parsing_error = e.message;
-    }
-  }
-
+  console.log("🔍 [getAllCategories] Starting category fetch...");
+  console.log("🔍 [getAllCategories] DATABASE_URL is set:", !!process.env.DATABASE_URL);
+  
   let categories = [];
   try {
-    console.log("🔍 [getAllCategories] Starting category fetch...");
+    // Tester la connexion Prisma
+    console.log("🔍 [getAllCategories] Testing Prisma connection...");
     
     // MongoDB doesn't support $queryRaw with SQL syntax
     // Use count() instead for MongoDB
     const categoryCount = await prisma.category.count();
-    debug_info.category_count = categoryCount;
     console.log(`📊 [getAllCategories] Category count from database: ${categoryCount}`);
 
     categories = await prisma.category.findMany({});
-    debug_info.prisma_findMany_count = categories.length;
-    debug_info.connection_status = "OK";
-    
     console.log(`✅ [getAllCategories] Found ${categories.length} categories`);
+    
     if (categories.length > 0) {
       console.log("📋 [getAllCategories] Categories:", categories.map(c => ({ id: c.id, name: c.name })));
-    } else if (categoryCount > 0) {
-      console.warn("⚠️ [getAllCategories] Count says there are categories but findMany returned empty!");
     }
+    
+    // Retourner le tableau de catégories directement
+    return response.json(categories);
 
   } catch (e) {
     console.error("❌ [getAllCategories] Error:", e);
-    debug_info.connection_error = {
+    console.error("❌ [getAllCategories] Error details:", {
       name: e.name,
       message: e.message,
       code: e.code,
-      clientVersion: e.clientVersion,
-    };
-  }
-
-  // Le frontend attend un tableau directement
-  // Gérer le cas où il y a une erreur de connexion
-  if (debug_info.connection_error) {
-    console.error("❌ [getAllCategories] Database connection error:", debug_info.connection_error);
+      stack: e.stack,
+    });
+    
+    // Retourner une erreur 500 avec les détails
     return response.status(500).json({
       error: "Database connection error",
-      message: debug_info.connection_error.message,
+      message: e.message,
+      code: e.code,
     });
   }
-  
-  // Retourner le tableau de catégories
-  return response.json(categories);
 });
 
 module.exports = {

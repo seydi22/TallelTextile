@@ -1,6 +1,7 @@
 const getApiBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-    return process.env.NEXT_PUBLIC_API_BASE_URL;
+    // Retirer le slash final s'il existe pour éviter les doubles slashes
+    return process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, '');
   }
   
   if (typeof window !== 'undefined') {
