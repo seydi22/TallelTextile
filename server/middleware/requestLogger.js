@@ -2,12 +2,8 @@ const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
 
-// Create logs directory if it doesn't exist
-const logsDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
-  console.log('Created logs directory:', logsDir);
-}
+// Détecter si on est sur Vercel (système de fichiers en lecture seule)
+let isVercel = process.env.VERCEL === '1' || !!process.env.VERCEL_ENV;
 
 // Custom format for logging
 morgan.token('reqId', (req) => req.reqId || 'unknown');
@@ -16,17 +12,41 @@ morgan.token('userId', (req) => req.user?.id || 'anonymous');
 // Create a simple log format
 const logFormat = ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" reqId=:reqId userId=:userId';
 
-// Create write stream for combined logs
-const accessLogStream = fs.createWriteStream(
-  path.join(logsDir, 'access.log'), 
-  { flags: 'a' }
-);
+// Sur Vercel, utiliser console.log au lieu d'écrire dans des fichiers
+let accessLogStream, errorLogStream;
+let logsDir;
 
-// Create write stream for error logs
-const errorLogStream = fs.createWriteStream(
-  path.join(logsDir, 'error.log'), 
-  { flags: 'a' }
-);
+if (!isVercel) {
+  // Create logs directory if it doesn't exist (uniquement en développement)
+  logsDir = path.join(__dirname, '..', 'logs');
+  if (!fs.existsSync(logsDir)) {
+    try {
+      fs.mkdirSync(logsDir, { recursive: true });
+      console.log('Created logs directory:', logsDir);
+    } catch (error) {
+      console.warn('Could not create logs directory:', error.message);
+      isVercel = true; // Fallback to console logging
+    }
+  }
+
+  // Create write stream for combined logs (uniquement si pas Vercel)
+  try {
+    accessLogStream = fs.createWriteStream(
+      path.join(logsDir, 'access.log'), 
+      { flags: 'a' }
+    );
+
+    // Create write stream for error logs
+    errorLogStream = fs.createWriteStream(
+      path.join(logsDir, 'error.log'), 
+      { flags: 'a' }
+    );
+  } catch (error) {
+    console.warn('Could not create log streams, using console logging:', error.message);
+    accessLogStream = null;
+    errorLogStream = null;
+  }
+}
 
 // Middleware to add request ID
 // Use crypto for generating IDs (built-in, no dependencies)
@@ -48,16 +68,24 @@ const addRequestId = (req, res, next) => {
 };
 
 // Standard request logger
-const requestLogger = morgan(logFormat, {
-  stream: accessLogStream,
-  skip: (req, res) => req.url === '/health' // Skip health checks
-});
+const requestLogger = isVercel || !accessLogStream
+  ? morgan(logFormat, {
+      skip: (req, res) => req.url === '/health' // Skip health checks
+    })
+  : morgan(logFormat, {
+      stream: accessLogStream,
+      skip: (req, res) => req.url === '/health' // Skip health checks
+    });
 
 // Error logger (only logs 4xx and 5xx responses)
-const errorLogger = morgan(logFormat, {
-  stream: errorLogStream,
-  skip: (req, res) => res.statusCode < 400
-});
+const errorLogger = isVercel || !errorLogStream
+  ? morgan(logFormat, {
+      skip: (req, res) => res.statusCode < 400
+    })
+  : morgan(logFormat, {
+      stream: errorLogStream,
+      skip: (req, res) => res.statusCode < 400
+    });
 
 // Security logger for suspicious activity
 const securityLogger = (req, res, next) => {
@@ -86,10 +114,21 @@ const securityLogger = (req, res, next) => {
         pattern: pattern.source
       };
       
-      fs.appendFileSync(
-        path.join(logsDir, 'security.log'), 
-        JSON.stringify(logEntry) + '\n'
-      );
+      // Sur Vercel, utiliser console.error au lieu d'écrire dans un fichier
+      if (isVercel) {
+        console.error('SECURITY_ALERT:', JSON.stringify(logEntry));
+      } else {
+        try {
+          const logsDir = path.join(__dirname, '..', 'logs');
+          fs.appendFileSync(
+            path.join(logsDir, 'security.log'), 
+            JSON.stringify(logEntry) + '\n'
+          );
+        } catch (error) {
+          // Fallback to console if file write fails
+          console.error('SECURITY_ALERT:', JSON.stringify(logEntry));
+        }
+      }
     }
   }
   
