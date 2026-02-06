@@ -76,4 +76,7 @@ export const authOptions: NextAuthOptions = {
   ...(process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET && {
     debug: true, // Activer le debug pour voir les avertissements
   }),
+  // Configuration pour éviter les erreurs de contexte
+  debug: process.env.NODE_ENV === "development",
+  useSecureCookies: process.env.NODE_ENV === "production",
 };
