@@ -40,8 +40,25 @@ const prismaClientSingleton = () => {
 
 const globalForPrisma = globalThis;
 
-const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
+// Lazy initialization - only create Prisma client when first accessed
+// This prevents connection attempts during module loading on Vercel
+let prismaInstance = null;
 
-module.exports = prisma;
+const getPrisma = () => {
+  if (!prismaInstance) {
+    prismaInstance = globalForPrisma.prisma ?? prismaClientSingleton();
+    if(process.env.NODE_ENV !== "production") {
+      globalForPrisma.prisma = prismaInstance;
+    }
+  }
+  return prismaInstance;
+};
 
-if(process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// Export a getter function instead of the instance directly
+// This ensures Prisma is only initialized when actually used
+module.exports = new Proxy({}, {
+  get(target, prop) {
+    const prisma = getPrisma();
+    return prisma[prop];
+  }
+});;
