@@ -11,7 +11,8 @@
 "use client";
 import { usePathname } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
+import { useSafeSession } from "@/hooks/useSafeSession";
 import { useRouter } from "next/navigation";
 import HeaderTop from "./HeaderTop";
 import Link from "next/link";
@@ -36,15 +37,9 @@ interface Category {
 
 const Header = () => {
   const pathname = usePathname();
-  // Protéger contre les erreurs de destructuration
-  let session = null;
-  try {
-    const sessionResult = useSession();
-    session = sessionResult?.data || null;
-  } catch (error) {
-    console.error('Erreur lors de la récupération de la session:', error);
-    session = null;
-  }
+  // Utiliser le hook sécurisé pour éviter les erreurs de destructuration
+  const sessionResult = useSafeSession();
+  const session = sessionResult?.data || null;
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   
