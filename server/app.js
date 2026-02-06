@@ -72,6 +72,10 @@ const allowedOrigins = [
   // Exemple: 'https://votre-frontend.vercel.app',
   // Vous pouvez aussi utiliser une variable d'environnement FRONTEND_VERCEL_URL
   process.env.FRONTEND_VERCEL_URL,
+  // URLs Vercel du frontend (tallel-textile.vercel.app)
+  'https://tallel-textile.vercel.app',
+  // Support pour toutes les URLs Vercel du frontend (preview, etc.)
+  process.env.FRONTEND_VERCEL_URL ? `https://${process.env.FRONTEND_VERCEL_URL}` : null,
 ].filter(Boolean); // Remove undefined values
 
 // CORS configuration with origin validation
@@ -90,19 +94,29 @@ const corsOptions = {
       return callback(null, true);
     }
     
-    // En production Vercel, autoriser les URLs Vercel du frontend
+    // En production Vercel, autoriser toutes les URLs Vercel (frontend et preview)
     if (process.env.VERCEL && origin.includes('.vercel.app')) {
+      console.log(`✅ [CORS] Allowing Vercel origin: ${origin}`);
+      return callback(null, true);
+    }
+    
+    // Autoriser spécifiquement le frontend principal
+    if (origin === 'https://tallel-textile.vercel.app') {
+      console.log(`✅ [CORS] Allowing frontend origin: ${origin}`);
       return callback(null, true);
     }
     
     // Reject other origins
     const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-    console.warn(`CORS blocked origin: ${origin}`);
+    console.warn(`❌ [CORS] Blocked origin: ${origin}`);
+    console.warn(`❌ [CORS] Allowed origins:`, allowedOrigins);
     return callback(new Error(msg), false);
   },
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true, // Allow cookies and authorization headers
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 };
 
 // Apply general rate limiting to all routes
