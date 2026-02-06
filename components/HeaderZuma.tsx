@@ -26,7 +26,9 @@ interface Category {
 
 const HeaderZuma = () => {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  // Protéger contre les erreurs de destructuration
+  const sessionResult = useSession();
+  const session = sessionResult?.data || null;
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
