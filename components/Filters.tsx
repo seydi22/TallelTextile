@@ -50,14 +50,27 @@ const Filters = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/categories");
+        // Ajouter un timeout pour éviter les blocages
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
+        
+        const response = await fetch("/api/categories", {
+          signal: controller.signal,
+        });
+        
+        clearTimeout(timeoutId);
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data: Category[] = await response.json();
         setCategories(data);
       } catch (e: any) {
-        setCategoriesError(e.message);
+        if (e.name === 'AbortError') {
+          setCategoriesError("Timeout: Le serveur met trop de temps à répondre");
+        } else {
+          setCategoriesError(e.message);
+        }
         console.error("Failed to fetch categories:", e);
       } finally {
         setLoadingCategories(false);

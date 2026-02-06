@@ -18,9 +18,16 @@ const CategoryMenu = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        // Ajouter un timeout pour éviter les blocages
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
+        
         const response = await fetch("/api/categories", {
           cache: 'no-store', // Force fresh data
+          signal: controller.signal,
         });
+        
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -52,7 +59,11 @@ const CategoryMenu = () => {
         }
       } catch (e: any) {
         console.error("❌ Failed to fetch categories:", e);
-        setError(e.message || "Erreur lors du chargement des catégories");
+        if (e.name === 'AbortError') {
+          setError("Timeout: Le serveur met trop de temps à répondre");
+        } else {
+          setError(e.message || "Erreur lors du chargement des catégories");
+        }
         // Ne pas vider les catégories en cas d'erreur pour éviter le flash
         // setCategories([]);
       } finally {

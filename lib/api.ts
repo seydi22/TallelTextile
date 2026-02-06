@@ -4,7 +4,8 @@ export const apiClient = {
   baseUrl: config.apiBaseUrl,
   
   async request(endpoint: string, options: RequestInit = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
+    // Utiliser l'URL de base ou une URL relative si baseUrl est vide (production Vercel)
+    const url = this.baseUrl ? `${this.baseUrl}${endpoint}` : endpoint;
     
     const defaultOptions: RequestInit = {
       headers: {
@@ -13,11 +14,27 @@ export const apiClient = {
       },
     };
     
+    // Ajouter un timeout par défaut de 10 secondes
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
     try {
-      return await fetch(url, { ...defaultOptions, ...options });
+      const response = await fetch(url, { 
+        ...defaultOptions, 
+        ...options,
+        signal: options.signal || controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
     } catch (error: any) {
+      clearTimeout(timeoutId);
       // Améliorer le message d'erreur pour les erreurs de connexion
       const errorMessage = error?.message || String(error);
+      if (error.name === 'AbortError') {
+        const timeoutError = new Error('Timeout: Le serveur met trop de temps à répondre');
+        (timeoutError as any).isConnectionError = true;
+        throw timeoutError;
+      }
       if (errorMessage.includes('fetch failed') || errorMessage.includes('ECONNREFUSED')) {
         // Créer une erreur plus descriptive
         const connectionError = new Error('Backend API non disponible. Veuillez démarrer le serveur avec: cd server && node app.js');
