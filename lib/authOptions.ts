@@ -82,6 +82,4 @@ export const authOptions: NextAuthOptions = {
   // Configuration pour éviter les erreurs de contexte
   debug: process.env.NODE_ENV === "development",
   useSecureCookies: process.env.NODE_ENV === "production",
-  // Configuration pour éviter les erreurs de contexte côté client
-  trustHost: true, // Nécessaire pour Vercel
 };
