@@ -21,17 +21,30 @@ const LoginPage = () => {
         email,
         password,
         redirect: false,
+        callbackUrl: "/",
       });
 
+      console.log("Login result:", result);
+
       if (result?.error) {
+        console.error("Login error:", result.error);
         toast.error("Email ou mot de passe incorrect");
-      } else {
+      } else if (result?.ok) {
         toast.success("Connexion réussie !");
-        router.push("/");
-        router.refresh();
+        // Attendre un peu pour que la session soit créée
+        await new Promise(resolve => setTimeout(resolve, 100));
+        // Utiliser window.location pour forcer une redirection complète
+        window.location.href = "/";
+      } else {
+        // Si pas d'erreur mais pas de succès non plus, rediriger quand même
+        console.warn("Login result unclear, redirecting anyway:", result);
+        toast.success("Connexion réussie !");
+        await new Promise(resolve => setTimeout(resolve, 100));
+        window.location.href = "/";
       }
-    } catch (error) {
-      toast.error("Une erreur est survenue lors de la connexion");
+    } catch (error: any) {
+      console.error("Login exception:", error);
+      toast.error(error?.message || "Une erreur est survenue lors de la connexion");
     } finally {
       setIsLoading(false);
     }
