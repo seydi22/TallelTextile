@@ -28,6 +28,9 @@ export const metadata: Metadata = {
   description: "Vente de vêtements en ligne",
 };
 
+// Forcer le rendu dynamique car nous utilisons getServerSession qui nécessite headers()
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
   children,
 }: Readonly<{
