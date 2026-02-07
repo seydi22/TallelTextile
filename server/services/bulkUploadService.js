@@ -1,3 +1,4 @@
+// Using csv-parse async API (not csv-parse/sync which doesn't exist in v5)
 const { parse } = require("csv-parse");
 
 // Validate a single CSV row according to the Product schema constraints
