@@ -21,14 +21,14 @@ export default function SettingsPage() {
       const response = await apiClient.get("/api/settings/hero_banner");
       if (response.ok) {
         const data = await response.json();
-        setHeroBanner(data.value || "/apartman banner.jpg");
+        setHeroBanner(data.value || "/apartman banner.jpeg");
       } else {
         // Si le paramètre n'existe pas encore, utiliser la valeur par défaut
-        setHeroBanner("/apartman banner.jpg");
+        setHeroBanner("/apartman banner.jpeg");
       }
     } catch (error) {
       console.error("Error fetching settings:", error);
-      setHeroBanner("/apartman banner.jpg");
+      setHeroBanner("/apartman banner.jpeg");
     } finally {
       setLoading(false);
     }

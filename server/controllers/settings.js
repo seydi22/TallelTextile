@@ -5,17 +5,27 @@ const { asyncHandler, AppError } = require("../utills/errorHandler");
 const getSetting = asyncHandler(async (request, response) => {
   const { key } = request.params;
 
-  const setting = await prisma.settings.findUnique({
-    where: { key },
-  });
-
-  if (!setting) {
-    return response.status(404).json({
-      error: "Setting not found",
+  try {
+    const setting = await prisma.settings.findUnique({
+      where: { key },
     });
-  }
 
-  return response.json(setting);
+    if (!setting) {
+      return response.status(404).json({
+        error: "Setting not found",
+      });
+    }
+
+    return response.json(setting);
+  } catch (error) {
+    // Si le modèle Settings n'existe pas encore dans la base de données
+    if (error.code === 'P2021' || error.message?.includes('does not exist')) {
+      return response.status(404).json({
+        error: "Setting not found",
+      });
+    }
+    throw error;
+  }
 });
 
 // Get all settings

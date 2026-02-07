@@ -17,7 +17,7 @@ import { getImageUrl } from "@/utils/imageUtils";
 
 const HeroZuma = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [bannerImage, setBannerImage] = useState("/apartman banner.jpg");
+  const [bannerImage, setBannerImage] = useState("/apartman banner.jpeg");
 
   useEffect(() => {
     setIsLoaded(true);
@@ -33,6 +33,9 @@ const HeroZuma = () => {
         if (data.value) {
           setBannerImage(data.value);
         }
+      } else if (response.status === 404) {
+        // Le paramètre n'existe pas encore, utiliser l'image par défaut
+        console.log("Banner setting not found, using default image");
       }
     } catch (error) {
       // En cas d'erreur, utiliser l'image par défaut
