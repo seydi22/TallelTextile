@@ -132,7 +132,7 @@ export default function SettingsPage() {
           <h1 className="text-3xl font-bold mb-6">Paramètres</h1>
 
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Bannière de la page d'accueil</h2>
+            <h2 className="text-xl font-semibold mb-4">Bannière de la page d&apos;accueil</h2>
             <p className="text-gray-600 mb-4">
               Changez l&apos;image de bannière qui s&apos;affiche sur la première page du site.
             </p>
