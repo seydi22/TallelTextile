@@ -2,7 +2,63 @@
   "version": 2,
   "routes": [
     {
-      "src": "/api/(.*)",
+      "src": "/api/products/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/categories/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/images/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/main-image/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/users/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/search/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/orders/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/order-product/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/slugs/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/notifications/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/merchants/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/bulk-upload/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/settings/(.*)",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/api/test",
+      "dest": "/api/vercel-serverless.js"
+    },
+    {
+      "src": "/health",
       "dest": "/api/vercel-serverless.js"
     }
   ],
