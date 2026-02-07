@@ -1,4 +1,4 @@
-const { parse } = require("csv-parse/sync");
+const { parse } = require("csv-parse");
 
 // Validate a single CSV row according to the Product schema constraints
 function validateRow(row) {
@@ -38,12 +38,17 @@ function validateRow(row) {
 
 async function parseCsvBufferToRows(buffer) {
   const text = buffer.toString("utf-8");
-  const records = parse(text, {
-    columns: true,
-    skip_empty_lines: true,
-    trim: true,
+  return new Promise((resolve, reject) => {
+    const records = [];
+    parse(text, {
+      columns: true,
+      skip_empty_lines: true,
+      trim: true,
+    })
+      .on("data", (data) => records.push(data))
+      .on("end", () => resolve(records))
+      .on("error", reject);
   });
-  return records;
 }
 
 function computeBatchStatus(successCount, errorCount) {

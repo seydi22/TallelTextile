@@ -12,20 +12,40 @@
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import apiClient from "@/lib/api";
+import { getImageUrl } from "@/utils/imageUtils";
 
 const HeroZuma = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [bannerImage, setBannerImage] = useState("/apartman banner.jpg");
 
   useEffect(() => {
     setIsLoaded(true);
+    // Récupérer la bannière depuis les paramètres
+    fetchBanner();
   }, []);
+
+  const fetchBanner = async () => {
+    try {
+      const response = await apiClient.get("/api/settings/hero_banner");
+      if (response.ok) {
+        const data = await response.json();
+        if (data.value) {
+          setBannerImage(data.value);
+        }
+      }
+    } catch (error) {
+      // En cas d'erreur, utiliser l'image par défaut
+      console.error("Error fetching banner:", error);
+    }
+  };
 
   return (
     <div className="relative h-screen w-full overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="/apartman banner.jpg"
+          src={getImageUrl(bannerImage)}
           alt="TALLEL TEXTILE"
           fill
           priority
