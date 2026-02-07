@@ -7,17 +7,6 @@ import { useEffect, useState } from "react";
  * Évite les erreurs de destructuration si le contexte NextAuth n'est pas encore initialisé
  */
 export function useSafeSession() {
-  const [isReady, setIsReady] = useState(false);
-  
-  useEffect(() => {
-    // Attendre un peu pour que le contexte NextAuth soit initialisé
-    const timer = setTimeout(() => {
-      setIsReady(true);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   // Utiliser useSession de manière inconditionnelle (règle des hooks React)
   // Mais protéger contre les erreurs de destructuration
   let sessionResult: any = null;
@@ -36,14 +25,8 @@ export function useSafeSession() {
     throw error;
   }
 
-  // Si le contexte n'est pas encore prêt, retourner des valeurs par défaut
-  if (!isReady && sessionResult?.status === "loading") {
-    return {
-      data: null,
-      status: "loading" as const,
-    };
-  }
-
+  // Retourner directement le résultat de useSession
+  // useSession gère déjà le statut "loading" correctement
   return sessionResult || {
     data: null,
     status: "loading" as const,
