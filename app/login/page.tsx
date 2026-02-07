@@ -43,10 +43,17 @@ const LoginPage = () => {
 
       console.log("Login result:", result);
 
-      if (result?.error) {
+      // Si result est undefined, cela signifie que NextAuth n'a pas pu se connecter
+      if (!result) {
+        console.error("Login failed: NextAuth returned undefined. Check backend connection.");
+        toast.error("Erreur de connexion. Vérifiez que le serveur est démarré.");
+        return;
+      }
+
+      if (result.error) {
         console.error("Login error:", result.error);
         toast.error("Email ou mot de passe incorrect");
-      } else if (result?.ok) {
+      } else if (result.ok) {
         toast.success("Connexion réussie !");
         // Attendre un peu pour que la session soit créée et rafraîchir la session
         await new Promise(resolve => setTimeout(resolve, 500));
