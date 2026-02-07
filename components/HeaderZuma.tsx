@@ -13,8 +13,7 @@ import { usePathname } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { FaSearch, FaBars, FaTimes } from "react-icons/fa";
-import { signOut } from "next-auth/react";
-import { useSafeSession } from "@/hooks/useSafeSession";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import CartElement from "./CartElement";
 import apiClient from "@/lib/api";
@@ -33,9 +32,8 @@ interface ApiCategory {
 
 const HeaderZuma = () => {
   const pathname = usePathname();
-  // Utiliser le hook sécurisé pour éviter les erreurs de destructuration
-  const sessionResult = useSafeSession();
-  const session = sessionResult?.data || null;
+  // Utiliser directement useSession de NextAuth
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -43,19 +41,20 @@ const HeaderZuma = () => {
   
   // Debug: log session status
   useEffect(() => {
-    if (sessionResult?.status === "authenticated") {
+    if (status === "authenticated") {
       console.log("🔐 [HeaderZuma] Session authentifiée:", session);
       console.log("🔐 [HeaderZuma] User role:", session?.user?.role);
-    } else if (sessionResult?.status === "loading") {
+      console.log("🔐 [HeaderZuma] User:", session?.user);
+    } else if (status === "loading") {
       console.log("⏳ [HeaderZuma] Session en chargement...");
     } else {
-      console.log("❌ [HeaderZuma] Pas de session:", sessionResult);
+      console.log("❌ [HeaderZuma] Pas de session, status:", status);
     }
-  }, [sessionResult, session]);
+  }, [status, session]);
   
   // Vérifier si l'utilisateur est admin
   const isAdmin = session?.user?.role === "admin";
-  const isLoggedIn = !!session;
+  const isLoggedIn = status === "authenticated" && !!session;
 
   // Fonction de déconnexion
   const handleSignOut = async () => {

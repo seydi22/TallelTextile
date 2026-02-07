@@ -1,6 +1,6 @@
 "use client";
 import { SessionProvider as NextAuthSessionProvider } from "next-auth/react";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 interface CustomSessionProviderProps {
   children: React.ReactNode;
@@ -8,28 +8,15 @@ interface CustomSessionProviderProps {
 }
 
 const SessionProvider = ({ children, session }: CustomSessionProviderProps) => {
-  const [isMounted, setIsMounted] = useState(false);
-  
   // S'assurer que session est bien un objet ou null, jamais undefined
   const safeSession = session && typeof session === 'object' ? session : null;
   
-  // Attendre que le composant soit monté côté client avant de rendre le provider
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-  
-  // Ne pas rendre le provider avant que le composant soit monté côté client
-  // Cela évite les erreurs d'hydratation et de contexte
-  if (!isMounted) {
-    return <>{children}</>;
-  }
-  
-  // Rendre le provider NextAuth avec la session sécurisée
+  // Rendre directement le provider NextAuth avec la session sécurisée
   // Activer le refetch pour que la session soit mise à jour après la connexion
   return (
     <NextAuthSessionProvider 
       session={safeSession}
-      refetchInterval={5 * 60} // Rafraîchir la session toutes les 5 minutes
+      refetchInterval={0} // Désactiver le refetch automatique, on le fera manuellement si besoin
       refetchOnWindowFocus={true} // Rafraîchir quand la fenêtre reprend le focus
     >
       {children}
