@@ -41,27 +41,71 @@ const Products = async ({ params, searchParams }: { params: { slug?: string[] },
   let products = [];
 
   try {
-    // sending API request with filtering, sorting and pagination for getting all products
-    const data = await apiClient.get(`/api/products?filters[price][$lte]=${
-        searchParams?.price || 3000
-      }&filters[rating][$gte]=${
-        Number(searchParams?.rating) || 0
-      }&filters[inStock][$${stockMode}]=1&${
-        params?.slug?.length! > 0
-          ? `filters[category][$equals]=${params?.slug}&`
-          : ""
-      }sort=${searchParams?.sort}&page=${page}`
-    );
+    // Construire les paramètres de requête de manière sécurisée
+    const queryParams = new URLSearchParams();
+    
+    // Ajouter les filtres
+    queryParams.append('filters[price][$lte]', String(searchParams?.price || 3000));
+    queryParams.append('filters[rating][$gte]', String(Number(searchParams?.rating) || 0));
+    queryParams.append(`filters[inStock][$${stockMode}]`, '1');
+    
+    // Gérer le filtre de catégorie si un slug est fourni
+    if (params?.slug && Array.isArray(params.slug) && params.slug.length > 0) {
+      // Le slug est le nom de la catégorie (ex: "smart-watches")
+      // Le convertir en nom de catégorie (ex: "smart watches")
+      const categoryName = params.slug[0].replace(/-/g, ' ');
+      queryParams.append('filters[category][$equals]', categoryName);
+    }
+    
+    // Ajouter le tri et la pagination
+    queryParams.append('sort', String(searchParams?.sort || 'defaultSort'));
+    queryParams.append('page', String(page));
+    
+    // Construire l'URL complète
+    const queryString = queryParams.toString();
+    const fullUrl = `/api/products?${queryString}`;
+    console.log('🔍 [Products] Request URL:', fullUrl);
+    console.log('🔍 [Products] Query params:', {
+      price: searchParams?.price || 3000,
+      rating: Number(searchParams?.rating) || 0,
+      stockMode,
+      category: params?.slug?.[0],
+      sort: searchParams?.sort || 'defaultSort',
+      page,
+    });
+    
+    const response = await apiClient.get(fullUrl);
 
-    if (!data.ok) {
-      console.error('Failed to fetch products:', data.statusText);
+    if (!response.ok) {
+      console.error('Failed to fetch products:', response.status, response.statusText);
+      
+      // Essayer de récupérer le message d'erreur du serveur
+      try {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          console.error('Server error details:', errorData);
+        } else {
+          const text = await response.text();
+          console.error('Server error response (non-JSON):', text.substring(0, 500));
+        }
+      } catch (e) {
+        console.error('Could not parse error response:', e);
+      }
+      
       products = [];
     } else {
-      const result = await data.json();
+      // Utiliser safeJsonParse pour parser la réponse de manière sécurisée
+      const result = await apiClient.safeJsonParse(response);
       products = Array.isArray(result) ? result : [];
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching products:', error);
+    console.error('Error details:', {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name
+    });
     products = [];
   }
 

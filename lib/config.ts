@@ -4,8 +4,13 @@ const getApiBaseUrl = () => {
     return process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, '');
   }
   
+  // En développement, utiliser le backend sur le port 3001
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3001';
+  }
+  
   if (typeof window !== 'undefined') {
-    // Côté client : URLs relatives (même projet Vercel)
+    // Côté client en production : URLs relatives (même projet Vercel)
     return '';
   }
   
