@@ -25,6 +25,12 @@ interface Category {
   href: string;
 }
 
+interface ApiCategory {
+  id: string;
+  name: string;
+  image: string | null;
+}
+
 const HeaderZuma = () => {
   const pathname = usePathname();
   // Utiliser le hook sécurisé pour éviter les erreurs de destructuration
@@ -58,12 +64,36 @@ const HeaderZuma = () => {
       try {
         // Utiliser apiClient pour utiliser la bonne URL de base (backend)
         const response = await apiClient.get('/api/categories');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Vérifier le Content-Type avant de parser
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.error("Non-JSON response received from /api/categories");
+          setCategories([]);
+          return;
+        }
+        
         const data = await response.json();
+        
         if (Array.isArray(data)) {
-          setCategories(data);
+          // Transform API categories to component format
+          const transformedCategories: Category[] = data
+            .filter((cat: ApiCategory) => cat.id && cat.name) // Filter out invalid categories
+            .map((cat: ApiCategory) => ({
+              id: cat.id,
+              title: cat.name,
+              href: `/shop/category/${cat.id}`, // Generate href from category ID
+            }));
+          
+          setCategories(transformedCategories);
         }
       } catch (error) {
         console.error('Error fetching categories:', error);
+        setCategories([]); // Set empty array on error
       }
     };
 

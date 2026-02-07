@@ -1,5 +1,24 @@
 import config from './config';
 
+// Helper function to safely parse JSON response
+async function safeJsonParse(response: Response): Promise<any> {
+  const contentType = response.headers.get('content-type');
+  
+  if (!contentType || !contentType.includes('application/json')) {
+    const text = await response.text();
+    console.error(`❌ [API] Non-JSON response received (${response.status}):`, text.substring(0, 200));
+    throw new Error(`La réponse du serveur n'est pas au format JSON (Content-Type: ${contentType || 'non défini'})`);
+  }
+  
+  try {
+    return await response.json();
+  } catch (error: any) {
+    const text = await response.text();
+    console.error(`❌ [API] Failed to parse JSON response:`, text.substring(0, 200));
+    throw new Error(`Erreur lors du parsing JSON: ${error.message}`);
+  }
+}
+
 export const apiClient = {
   baseUrl: config.apiBaseUrl,
   
@@ -31,6 +50,13 @@ export const apiClient = {
         signal: options.signal || controller.signal,
       });
       clearTimeout(timeoutId);
+      
+      // Log 404 errors with helpful message
+      if (response.status === 404) {
+        console.warn(`⚠️ [API] 404 Not Found: ${url}`);
+        console.warn(`💡 Vérifiez que le backend est démarré: cd server && node app.js`);
+      }
+      
       return response;
     } catch (error: any) {
       clearTimeout(timeoutId);
@@ -71,6 +97,9 @@ export const apiClient = {
     
   delete: (endpoint: string, options?: RequestInit) =>
     apiClient.request(endpoint, { ...options, method: 'DELETE' }),
+  
+  // Safe JSON parsing helper
+  safeJsonParse: safeJsonParse,
 };
 
 export default apiClient;

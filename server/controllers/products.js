@@ -70,13 +70,14 @@ function buildSafeFilterObject(filterArray) {
 }
 
 const getAllProducts = asyncHandler(async (request, response) => {
-  const mode = request.query.mode || "";
-  
-  // checking if we are on the admin products page because we don't want to have filtering, sorting and pagination there
-  if(mode === "admin"){
-    const adminProducts = await prisma.product.findMany({});
-    return response.json(adminProducts);
-  } else {
+  try {
+    const mode = request.query.mode || "";
+    
+    // checking if we are on the admin products page because we don't want to have filtering, sorting and pagination there
+    if(mode === "admin"){
+      const adminProducts = await prisma.product.findMany({});
+      return response.json(adminProducts);
+    } else {
     const dividerLocation = request.url.indexOf("?");
     let filterObj = {};
     let sortObj = {};
@@ -159,17 +160,30 @@ const getAllProducts = asyncHandler(async (request, response) => {
       filterObj = buildSafeFilterObject(filterArray);
     }
 
-    let whereClause = { ...filterObj };
-
-    // Security: Handle category filter separately with validation
-    if (filterObj.category && filterObj.category.equals) {
-      delete whereClause.category;
+    // Build whereClause for Prisma, handling each filter type correctly
+    let whereClause = {};
+    
+    // Handle price filter - ensure it's a valid Prisma filter object
+    if (filterObj.price && typeof filterObj.price === 'object') {
+      whereClause.price = filterObj.price;
     }
+    
+    // Handle rating filter - ensure it's a valid Prisma filter object
+    if (filterObj.rating && typeof filterObj.rating === 'object') {
+      whereClause.rating = filterObj.rating;
+    }
+    
+    // Handle inStock filter - ensure it's a valid Prisma filter object
+    if (filterObj.inStock && typeof filterObj.inStock === 'object') {
+      whereClause.inStock = filterObj.inStock;
+    }
+    
+    // Note: category filter is handled separately below
 
     // Security: Build sort object safely
     switch (sortByValue) {
       case "defaultSort":
-        sortObj = {};
+        sortObj = { id: "asc" }; // Use id as default sort instead of empty object
         break;
       case "titleAsc":
         sortObj = { title: "asc" };
@@ -184,65 +198,120 @@ const getAllProducts = asyncHandler(async (request, response) => {
         sortObj = { price: "desc" };
         break;
       default:
-        sortObj = {};
+        sortObj = { id: "asc" }; // Use id as default sort instead of empty object
     }
+
+    // Log pour débogage
+    console.log("🔍 [getAllProducts] Filter object:", JSON.stringify(filterObj, null, 2));
+    console.log("🔍 [getAllProducts] Where clause:", JSON.stringify(whereClause, null, 2));
+    console.log("🔍 [getAllProducts] Sort object:", JSON.stringify(sortObj, null, 2));
+    console.log("🔍 [getAllProducts] Page:", validatedPage);
 
     let products;
-
-    if (Object.keys(filterObj).length === 0) {
-      products = await prisma.product.findMany({
-        skip: (validatedPage - 1) * 10,
-        take: 12,
-        include: {
-          category: {
-            select: {
-              name: true,
-            },
+    const baseQueryOptions = {
+      skip: (validatedPage - 1) * 10,
+      take: 12,
+      include: {
+        category: {
+          select: {
+            name: true,
           },
         },
-        orderBy: sortObj,
-      });
-    } else {
-      // Security: Handle category filter with proper validation
-      if (filterObj.category && filterObj.category.equals) {
+      },
+      orderBy: sortObj,
+    };
+
+    try {
+      // First, get all valid category IDs to filter out products with invalid categories
+      const validCategoryIds = await prisma.category.findMany({
+        select: { id: true },
+      }).then(categories => categories.map(c => c.id));
+      
+      console.log(`🔍 [getAllProducts] Found ${validCategoryIds.length} valid categories`);
+
+      // Build base where clause that ensures categoryId exists in valid categories
+      const baseWhere = {
+        categoryId: {
+          in: validCategoryIds.length > 0 ? validCategoryIds : [], // Only include products with valid category IDs
+        },
+      };
+
+      if (Object.keys(filterObj).length === 0) {
+        // No filters, get all products with valid categories
+        console.log("🔍 [getAllProducts] Fetching all products without filters (with valid categories)");
         products = await prisma.product.findMany({
-          skip: (validatedPage - 1) * 10,
-          take: 12,
-          include: {
-            category: {
-              select: {
-                name: true,
-              },
-            },
-          },
-          where: {
-            ...whereClause,
-            category: {
-              name: {
-                equals: filterObj.category.equals,
-              },
-            },
-          },
-          orderBy: sortObj,
+          ...baseQueryOptions,
+          where: baseWhere,
         });
       } else {
-        products = await prisma.product.findMany({
-          skip: (validatedPage - 1) * 10,
-          take: 12,
-          include: {
-            category: {
-              select: {
-                name: true,
+        // Security: Handle category filter with proper validation
+        if (filterObj.category && filterObj.category.equals) {
+          console.log("🔍 [getAllProducts] Fetching products with category filter:", filterObj.category.equals);
+          // Find the category ID by name
+          const category = await prisma.category.findFirst({
+            where: { name: filterObj.category.equals },
+            select: { id: true },
+          });
+          
+          if (category) {
+            products = await prisma.product.findMany({
+              ...baseQueryOptions,
+              where: {
+                ...whereClause,
+                categoryId: category.id, // Filter by category ID
               },
-            },
-          },
-          where: whereClause,
-          orderBy: sortObj,
-        });
+            });
+          } else {
+            // Category not found, return empty array
+            console.warn(`⚠️ [getAllProducts] Category not found: ${filterObj.category.equals}`);
+            products = [];
+          }
+        } else {
+          console.log("🔍 [getAllProducts] Fetching products with filters (no category)");
+          // Only use whereClause if it has valid filters
+          if (Object.keys(whereClause).length > 0) {
+            products = await prisma.product.findMany({
+              ...baseQueryOptions,
+              where: {
+                ...whereClause,
+                ...baseWhere, // Ensure category exists
+              },
+            });
+          } else {
+            // If whereClause is empty but filterObj has other filters, get all products with valid categories
+            products = await prisma.product.findMany({
+              ...baseQueryOptions,
+              where: baseWhere,
+            });
+          }
+        }
       }
-    }
 
-    return response.json(products);
+      console.log(`✅ [getAllProducts] Found ${products.length} products`);
+      return response.json(products);
+    } catch (error) {
+      console.error("❌ [getAllProducts] Prisma error:", error);
+      console.error("❌ [getAllProducts] Error details:", {
+        name: error.name,
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+      });
+      // Re-throw to let asyncHandler handle it
+      throw error;
+    }
+    }
+  } catch (error) {
+    // Catch any errors that occur outside the inner try/catch
+    console.error("❌ [getAllProducts] Outer catch - Unexpected error:", error);
+    console.error("❌ [getAllProducts] Error details:", {
+      name: error?.name,
+      message: error?.message,
+      code: error?.code,
+      stack: error?.stack,
+    });
+    // Re-throw to let asyncHandler handle it
+    throw error;
   }
 });
 

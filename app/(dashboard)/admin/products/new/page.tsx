@@ -1,6 +1,7 @@
 "use client";
 import { DashboardSidebar } from "@/components";
 import apiClient from "@/lib/api";
+import config from "@/lib/config";
 import { convertCategoryNameToURLFriendly as convertSlugToURLFriendly } from "@/utils/categoryFormating";
 import { sanitizeFormData } from "@/lib/form-sanitize";
 import { getImageUrl } from "@/utils/imageUtils";
@@ -125,30 +126,60 @@ const AddNewProduct = () => {
     formData.append("uploadedFile", file);
 
     try {
-      // Use fetch directly for FormData upload
-      // En production Vercel, utiliser des URLs relatives (chaîne vide)
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || (typeof window !== 'undefined' ? '' : 'http://localhost:3001');
-      const uploadUrl = `${apiBaseUrl}/api/main-image`;
-      console.log(`📤 [Upload] API Base URL: ${apiBaseUrl || 'URLs relatives'}`);
+      // Utiliser config.apiBaseUrl pour une URL cohérente
+      const uploadUrl = `${config.apiBaseUrl}/api/main-image`;
       console.log(`📤 [Upload] Upload URL: ${uploadUrl}`);
+      
       const response = await fetch(uploadUrl, {
         method: "POST",
         body: formData,
+        // Ne pas définir Content-Type pour FormData, le navigateur le fait automatiquement
       });
 
       if (response.ok) {
+        // Vérifier le Content-Type avant de parser
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error("Non-JSON response:", text.substring(0, 200));
+          toast.error("Erreur: Réponse serveur invalide");
+          return;
+        }
+        
         const data = await response.json();
-        // Use the filename returned by the server
-        setProduct({ ...product, mainImage: data.filename });
+        // Use the filename returned by the server (or url for Cloudinary)
+        setProduct({ ...product, mainImage: data.filename || data.url });
         toast.success("Image téléchargée avec succès");
       } else {
-        const errorData = await response.json();
-        console.error("File upload unsuccessful:", errorData);
-        toast.error(errorData.message || "Erreur lors de l'upload de l'image");
+        // Gérer les erreurs HTTP
+        let errorMessage = `Erreur HTTP ${response.status}`;
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorData.error || errorMessage;
+          } else {
+            const text = await response.text();
+            console.error("Error response (non-JSON):", text.substring(0, 200));
+            if (response.status === 404) {
+              errorMessage = "Endpoint non trouvé. Le backend est-il démarré ?";
+            }
+          }
+        } catch (e) {
+          console.error("Could not parse error response:", e);
+        }
+        toast.error(errorMessage);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error happened while sending request:", error);
-      toast.error("Erreur réseau lors de l'upload de l'image");
+      const errorMessage = error?.message || "Erreur réseau lors de l'upload de l'image";
+      
+      // Messages d'erreur plus spécifiques
+      if (errorMessage.includes('fetch failed') || errorMessage.includes('ECONNREFUSED')) {
+        toast.error("Impossible de se connecter au serveur. Vérifiez que le backend est démarré (cd server && node app.js)");
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 

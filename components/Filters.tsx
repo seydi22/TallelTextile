@@ -20,6 +20,12 @@ interface Category {
   bgImage: string;
 }
 
+interface ApiCategory {
+  id: string;
+  name: string;
+  image: string | null;
+}
+
 const Filters = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -64,10 +70,39 @@ const Filters = () => {
         clearTimeout(timeoutId);
         
         if (!response.ok) {
+          if (response.status === 404) {
+            console.warn('⚠️ API endpoint not found. Is the backend server running?');
+            setCategories([]);
+            return;
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data: Category[] = await response.json();
-        setCategories(data);
+        
+        const rawData = await apiClient.safeJsonParse(response);
+        
+        // Handle both array format and object format (for backward compatibility)
+        let categoriesArray: ApiCategory[] = rawData;
+        if (!Array.isArray(rawData)) {
+          if (rawData.categories && Array.isArray(rawData.categories)) {
+            categoriesArray = rawData.categories;
+          } else {
+            console.error("Invalid categories data format:", rawData);
+            setCategories([]);
+            return;
+          }
+        }
+        
+        // Transform API categories to component format
+        const transformedCategories: Category[] = categoriesArray
+          .filter((cat: ApiCategory) => cat.id && cat.name) // Filter out invalid categories
+          .map((cat: ApiCategory) => ({
+            id: cat.id,
+            title: cat.name,
+            href: `/shop/category/${cat.id}`, // Generate href from category ID
+            bgImage: cat.image || "/product_placeholder.jpg",
+          }));
+        
+        setCategories(transformedCategories);
       } catch (e: any) {
         if (e.name === 'AbortError') {
           setCategoriesError("Timeout: Le serveur met trop de temps à répondre");
@@ -142,20 +177,25 @@ const Filters = () => {
                 All Products
               </button>
             </li>
-            {categories.map((cat) => (
-              <li key={cat.id}>
-                <button
-                  onClick={() => handleCategoryClick(cat.title.toLowerCase().replace(/\s+/g, '-'))}
-                  className={`w-full text-left py-1 px-2 rounded-md ${
-                    currentCategorySlug === cat.title.toLowerCase().replace(/\s+/g, '-')
-                      ? 'bg-blue-100 text-blue-800 font-semibold'
-                      : 'hover:bg-gray-100'
-                  }`}
-                >
-                  {cat.title}
-                </button>
-              </li>
-            ))}
+            {categories.map((cat) => {
+              // Safely generate slug from title
+              const categorySlug = cat.title ? cat.title.toLowerCase().replace(/\s+/g, '-') : '';
+              
+              return (
+                <li key={cat.id}>
+                  <button
+                    onClick={() => handleCategoryClick(categorySlug)}
+                    className={`w-full text-left py-1 px-2 rounded-md ${
+                      currentCategorySlug === categorySlug
+                        ? 'bg-blue-100 text-blue-800 font-semibold'
+                        : 'hover:bg-gray-100'
+                    }`}
+                  >
+                    {cat.title || 'Catégorie sans nom'}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

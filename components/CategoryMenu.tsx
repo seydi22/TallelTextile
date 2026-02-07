@@ -11,6 +11,12 @@ interface Category {
   bgImage: string;
 }
 
+interface ApiCategory {
+  id: string;
+  name: string;
+  image: string | null;
+}
+
 const CategoryMenu = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +38,25 @@ const CategoryMenu = () => {
         clearTimeout(timeoutId);
         
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          let errorMessage = `HTTP error! status: ${response.status}`;
+          try {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              const errorData = await response.json();
+              errorMessage = errorData.error || errorMessage;
+            }
+          } catch (e) {
+            // Ignore JSON parsing errors for error responses
+          }
+          throw new Error(errorMessage);
+        }
+        
+        // Vérifier le Content-Type avant de parser
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error("Non-JSON response received:", text.substring(0, 200));
+          throw new Error('La réponse du serveur n\'est pas au format JSON');
         }
         
         const data = await response.json();
@@ -44,7 +68,7 @@ const CategoryMenu = () => {
         }
         
         // Handle both array format and object format (for backward compatibility)
-        let categoriesArray = data;
+        let categoriesArray: ApiCategory[] = data;
         if (!Array.isArray(data)) {
           // If it's an object with categories property (debug mode)
           if (data.categories && Array.isArray(data.categories)) {
@@ -60,9 +84,41 @@ const CategoryMenu = () => {
           }
         }
         
-        if (categoriesArray.length > 0) {
-          setCategories(categoriesArray);
-          console.log(`✅ Loaded ${categoriesArray.length} categories:`, categoriesArray);
+        // Transform API categories to component format
+        const transformedCategories: Category[] = categoriesArray
+          .filter((cat: ApiCategory) => cat.id && cat.name) // Filter out invalid categories
+          .map((cat: ApiCategory) => {
+            // Normalize image path for Next.js Image component
+            let imagePath = "/product_placeholder.jpg"; // Default placeholder
+            if (cat.image) {
+              const trimmedImage = cat.image.trim();
+              if (trimmedImage) {
+                // If it's already a full URL (http:// or https://), use it as is
+                if (trimmedImage.startsWith("http://") || trimmedImage.startsWith("https://")) {
+                  imagePath = trimmedImage;
+                } 
+                // If it's a relative path, ensure it starts with /
+                else if (trimmedImage.startsWith("/")) {
+                  imagePath = trimmedImage;
+                } 
+                // If it doesn't start with /, add it
+                else {
+                  imagePath = `/${trimmedImage}`;
+                }
+              }
+            }
+            
+            return {
+              id: cat.id,
+              title: cat.name,
+              href: `/shop/category/${cat.id}`, // Generate href from category ID
+              bgImage: imagePath,
+            };
+          });
+        
+        if (transformedCategories.length > 0) {
+          setCategories(transformedCategories);
+          console.log(`✅ Loaded ${transformedCategories.length} categories:`, transformedCategories);
         } else {
           console.warn("⚠️ No categories found in response");
           setCategories([]);
@@ -123,7 +179,7 @@ const CategoryMenu = () => {
                 <CategoryItem
                   title={item.title}
                   href={item.href}
-                  bgImage={item.bgImage || "/product_placeholder.jpg"}
+                  bgImage={item.bgImage}
                 />
               </div>
             ))

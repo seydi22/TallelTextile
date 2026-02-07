@@ -110,11 +110,18 @@ const handleServerError = (error, res, context = "") => {
   // Log the error
   logError(error, context);
 
+  // Vérifier si la réponse a déjà été envoyée
+  if (res.headersSent) {
+    console.error("⚠️ [handleServerError] Response already sent, cannot send error response");
+    return;
+  }
+
   // Custom application errors
   if (error instanceof AppError) {
     res.status(error.statusCode).json({
       error: error.message,
       timestamp,
+      context: context || undefined,
     });
     return;
   }
@@ -124,14 +131,23 @@ const handleServerError = (error, res, context = "") => {
     const errorResponse = handlePrismaError(error);
     const statusCode = getStatusCodeFromPrismaError(error);
 
-    res.status(statusCode).json(errorResponse);
+    res.status(statusCode).json({
+      ...errorResponse,
+      context: context || undefined,
+    });
     return;
   }
 
-  // Generic server error
+  // Generic server error with more details in development
+  const errorMessage = process.env.NODE_ENV === 'development' 
+    ? (error?.message || String(error) || "Internal server error. Please try again later.")
+    : "Internal server error. Please try again later.";
+  
   res.status(500).json({
-    error: "Internal server error. Please try again later.",
+    error: errorMessage,
     timestamp,
+    context: context || undefined,
+    ...(process.env.NODE_ENV === 'development' && error?.stack ? { stack: error.stack } : {}),
   });
 };
 

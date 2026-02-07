@@ -4,7 +4,6 @@ import { nanoid } from "nanoid";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import apiClient from "@/lib/api";
-import config from "@/lib/config";
 
 const DashboardCategory = () => {
   const [categories, setCategories] = useState<any[]>([]);
@@ -13,29 +12,43 @@ const DashboardCategory = () => {
 
   // getting all categories to be displayed on the all categories page
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    // Remplacer apiClient.get par un fetch direct pour déboguer
-    fetch(`${config.apiBaseUrl}/api/categories`)
-      .then(async (res) => {
-        if (!res || typeof res !== 'object' || !('status' in res) || !('statusText' in res)) {
-          console.error("Invalid response object received:", res);
-          throw new Error("Invalid API response format.");
-        }
-
-        if (!res.ok) {
-          let errorMessage = `HTTP error! status: ${res.status}, Message: ${res.statusText}`;
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await apiClient.get('/api/categories');
+        
+        if (!response.ok) {
+          let errorMessage = `HTTP error! status: ${response.status}`;
           try {
-            const errorData = await res.json();
-            errorMessage = errorData.error || errorMessage;
+            // Vérifier le Content-Type avant de parser
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              const errorData = await response.json();
+              errorMessage = errorData.error || errorMessage;
+            } else {
+              // Si ce n'est pas du JSON, lire le texte
+              const text = await response.text();
+              console.error("Non-JSON error response:", text.substring(0, 200));
+              errorMessage = `Erreur serveur (${response.status}): Réponse non-JSON reçue`;
+            }
           } catch (e) {
-            console.warn("Could not parse error response JSON:", e);
+            console.warn("Could not parse error response:", e);
+            errorMessage = `Erreur serveur (${response.status})`;
           }
           throw new Error(errorMessage);
         }
-        return res.json();
-      })
-      .then((data) => {
+        
+        // Vérifier le Content-Type avant de parser la réponse
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error("Non-JSON response received:", text.substring(0, 200));
+          throw new Error('La réponse du serveur n\'est pas au format JSON. Le backend est-il démarré ?');
+        }
+        
+        const data = await response.json();
         console.log("Raw API response:", data);
         
         // Afficher les informations de debug
@@ -61,11 +74,26 @@ const DashboardCategory = () => {
           }
         }
         
-        const categoriesData = data.categories;
-        const isArray = Array.isArray(categoriesData);
-        if (!isArray) {
-          console.error("Data received from /api/categories is not an array:", categoriesData);
+        // Handle both array format and object format (for backward compatibility)
+        let categoriesData;
+        if (Array.isArray(data)) {
+          // API returns array directly
+          categoriesData = data;
+        } else if (data.categories && Array.isArray(data.categories)) {
+          // API returns object with categories property
+          categoriesData = data.categories;
+        } else {
+          // Invalid format
+          console.error("Data received from /api/categories is not an array:", data);
           console.error("Full response data:", data);
+          setError("Format de données invalide reçu de l'API");
+          setCategories([]);
+          return;
+        }
+        
+        // Validate that we have a valid array
+        if (!Array.isArray(categoriesData)) {
+          console.error("categoriesData is not an array:", categoriesData);
           setError("Format de données invalide reçu de l'API");
           setCategories([]);
         } else {
@@ -75,15 +103,16 @@ const DashboardCategory = () => {
             setError("Aucune catégorie trouvée dans la base de données");
           }
         }
-      })
-      .catch(error => {
+      } catch (error: any) {
         console.error("Failed to fetch categories:", error);
-        setError(`Erreur lors du chargement: ${error.message}`);
+        setError(`Erreur lors du chargement: ${error.message || 'Erreur inconnue'}`);
         setCategories([]);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   return (

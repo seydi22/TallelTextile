@@ -66,7 +66,17 @@ const Header = () => {
       try {
         // Utiliser apiClient pour utiliser la bonne URL de base (backend)
         const response = await apiClient.get('/api/categories');
-        const data = await response.json();
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            console.warn('⚠️ API endpoint not found. Is the backend server running?');
+            setCategories([]);
+            return;
+          }
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await apiClient.safeJsonParse(response);
         if (Array.isArray(data)) {
           setCategories(data);
         }

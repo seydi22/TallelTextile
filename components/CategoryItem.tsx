@@ -19,16 +19,37 @@ interface CategoryItemProps {
 }
 
 const CategoryItem = ({ title, href, bgImage }: CategoryItemProps) => {
+  // Ensure bgImage is always a valid string (normalized in CategoryMenu, but double-check here)
+  const imageSrc = (() => {
+    if (!bgImage || !bgImage.trim()) {
+      return "/product_placeholder.jpg";
+    }
+    const trimmed = bgImage.trim();
+    // If it's already a full URL, use it as is
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      return trimmed;
+    }
+    // If it's a relative path, ensure it starts with /
+    if (trimmed.startsWith("/")) {
+      return trimmed;
+    }
+    // If it doesn't start with /, add it
+    return `/${trimmed}`;
+  })();
+  
+  // Validate that href is a valid string
+  const validHref = href && href.trim() ? href.trim() : "#";
+  
   return (
     <Link 
-      href={href} 
+      href={validHref} 
       className="block group overflow-hidden relative aspect-[4/5] md:aspect-[3/4] transition-all duration-700 hover:scale-[1.02]"
     >
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src={bgImage}
-          alt={title}
+          src={imageSrc}
+          alt={title || "Category"}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-110"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
