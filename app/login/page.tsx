@@ -49,8 +49,9 @@ const LoginPage = () => {
       } else if (result?.ok) {
         toast.success("Connexion réussie !");
         // Attendre un peu pour que la session soit créée
-        await new Promise(resolve => setTimeout(resolve, 100));
-        // Utiliser window.location pour forcer une redirection complète
+        await new Promise(resolve => setTimeout(resolve, 300));
+        // Utiliser window.location pour forcer une redirection complète qui recharge tout
+        // Cela garantit que la session est bien chargée
         window.location.href = "/";
       } else {
         // Si pas d'erreur mais pas de succès non plus, rediriger quand même

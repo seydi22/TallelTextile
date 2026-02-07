@@ -25,11 +25,12 @@ const SessionProvider = ({ children, session }: CustomSessionProviderProps) => {
   }
   
   // Rendre le provider NextAuth avec la session sécurisée
+  // Activer le refetch pour que la session soit mise à jour après la connexion
   return (
     <NextAuthSessionProvider 
       session={safeSession}
-      refetchInterval={0}
-      refetchOnWindowFocus={false}
+      refetchInterval={5 * 60} // Rafraîchir la session toutes les 5 minutes
+      refetchOnWindowFocus={true} // Rafraîchir quand la fenêtre reprend le focus
     >
       {children}
     </NextAuthSessionProvider>

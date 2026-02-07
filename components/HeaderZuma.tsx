@@ -41,6 +41,18 @@ const HeaderZuma = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
+  // Debug: log session status
+  useEffect(() => {
+    if (sessionResult?.status === "authenticated") {
+      console.log("🔐 [HeaderZuma] Session authentifiée:", session);
+      console.log("🔐 [HeaderZuma] User role:", session?.user?.role);
+    } else if (sessionResult?.status === "loading") {
+      console.log("⏳ [HeaderZuma] Session en chargement...");
+    } else {
+      console.log("❌ [HeaderZuma] Pas de session:", sessionResult);
+    }
+  }, [sessionResult, session]);
+  
   // Vérifier si l'utilisateur est admin
   const isAdmin = session?.user?.role === "admin";
   const isLoggedIn = !!session;
