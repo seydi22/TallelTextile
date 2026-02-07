@@ -170,6 +170,15 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Test endpoint pour vérifier que le serveur fonctionne
+app.get('/api/test', (req, res) => {
+  res.status(200).json({ 
+    message: 'Backend is working',
+    timestamp: new Date().toISOString(),
+    requestId: req.reqId
+  });
+});
+
 // Rate limit info endpoint
 app.get('/rate-limit-info', (req, res) => {
   res.status(200).json({
@@ -187,8 +196,14 @@ app.get('/rate-limit-info', (req, res) => {
 
 // 404 handler
 app.use('*', (req, res) => {
+  console.log(`❌ [404] Route not found: ${req.method} ${req.url}`);
+  console.log(`❌ [404] Original URL: ${req.originalUrl}`);
+  console.log(`❌ [404] Path: ${req.path}`);
   res.status(404).json({
     error: 'Route not found',
+    method: req.method,
+    path: req.path,
+    url: req.url,
     requestId: req.reqId
   });
 });

@@ -61,11 +61,15 @@ try {
 // Wrapper pour logger les requêtes entrantes (debug)
 const originalHandler = app;
 const handler = (req, res) => {
-  // Logger pour debug (peut être retiré en production)
-  if (process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'development') {
-    console.log(`[Vercel Handler] ${req.method} ${req.url}`);
-    console.log(`[Vercel Handler] Original path: ${req.url}`);
-  }
+  // Logger pour debug
+  console.log(`[Vercel Handler] ${req.method} ${req.url}`);
+  console.log(`[Vercel Handler] Original path: ${req.url}`);
+  console.log(`[Vercel Handler] Pathname: ${req.path || req.url}`);
+  
+  // Vercel route /api/(.*) vers /api/vercel-serverless.js
+  // Mais Express s'attend à recevoir le chemin complet
+  // Si l'URL commence par /api/, on doit la garder telle quelle
+  // Sinon, on doit peut-être l'ajuster
   
   // Passer la requête à Express
   return originalHandler(req, res);
