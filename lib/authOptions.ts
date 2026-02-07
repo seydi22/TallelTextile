@@ -45,18 +45,32 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as User).role || "user";
+      try {
+        if (user) {
+          token.id = user.id;
+          token.role = (user as User).role || "user";
+        }
+        return token;
+      } catch (error) {
+        console.error("Error in jwt callback:", error);
+        throw error;
       }
-      return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
+      try {
+        if (session.user && token) {
+          session.user.id = token.id as string;
+          session.user.role = (token.role as string) || "user";
+        }
+        return session;
+      } catch (error) {
+        console.error("Error in session callback:", error);
+        throw error;
       }
-      return session;
+    },
+    async signIn({ user, account, profile }) {
+      // Permettre la connexion si l'utilisateur existe
+      return !!user;
     }
   },
   pages: {
