@@ -1,14 +1,14 @@
 const prisma = require("../utills/db");
 const { asyncHandler, AppError } = require("../utills/errorHandler");
-const {
-  parseCsvBufferToRows,
-  validateRow,
-  createBatchWithItems,
-  computeBatchStatus,
-  getBatchSummary,
-  canDeleteProductsForBatch,
-  applyItemUpdates,
-} = require("../services/bulkUploadService");
+
+// Lazy loading pour éviter de charger csv-parse au démarrage
+let bulkUploadService = null;
+const getBulkUploadService = () => {
+  if (!bulkUploadService) {
+    bulkUploadService = require("../services/bulkUploadService");
+  }
+  return bulkUploadService;
+};
 
 // POST /api/bulk-upload
 const uploadCsvAndCreateBatch = asyncHandler(async (req, res) => {
@@ -25,6 +25,7 @@ const uploadCsvAndCreateBatch = asyncHandler(async (req, res) => {
 
   console.log("✅ File received:", csvFile.name, csvFile.size, "bytes");
 
+  const { parseCsvBufferToRows } = getBulkUploadService();
   const rows = await parseCsvBufferToRows(csvFile.data);
   console.log("📊 Parsed rows:", rows.length);
 
@@ -32,6 +33,8 @@ const uploadCsvAndCreateBatch = asyncHandler(async (req, res) => {
     throw new AppError("CSV has no rows", 400);
   }
 
+  const { validateRow, createBatchWithItems, computeBatchStatus } = getBulkUploadService();
+  
   const valid = [];
   const errors = [];
   for (let i = 0; i < rows.length; i++) {
@@ -73,6 +76,7 @@ const uploadCsvAndCreateBatch = asyncHandler(async (req, res) => {
     return batch;
   });
 
+  const { getBatchSummary } = getBulkUploadService();
   const summary = await getBatchSummary(prisma, result.id);
 
   return res.status(201).json({
@@ -153,6 +157,7 @@ const updateBatchItems = asyncHandler(async (req, res) => {
     throw new AppError("Items array is required", 400);
   }
 
+  const { applyItemUpdates } = getBulkUploadService();
   const updated = await prisma.$transaction(async (tx) => {
     return await applyItemUpdates(tx, batchId, items);
   });
@@ -183,6 +188,7 @@ const deleteBatch = asyncHandler(async (req, res) => {
   if (deleteProducts) {
     // Check if products can be deleted (not in orders)
     console.log("🔍 Checking if products can be deleted...");
+    const { canDeleteProductsForBatch } = getBulkUploadService();
     const check = await canDeleteProductsForBatch(prisma, batchId);
     console.log("Check result:", check);
 
