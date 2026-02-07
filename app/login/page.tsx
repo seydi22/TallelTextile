@@ -1,7 +1,7 @@
 "use client";
 
 import { SectionTitle } from "@/components";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
@@ -48,8 +48,10 @@ const LoginPage = () => {
         toast.error("Email ou mot de passe incorrect");
       } else if (result?.ok) {
         toast.success("Connexion réussie !");
-        // Attendre un peu pour que la session soit créée
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Attendre un peu pour que la session soit créée et rafraîchir la session
+        await new Promise(resolve => setTimeout(resolve, 500));
+        // Forcer un refresh de la session
+        await getSession();
         // Utiliser window.location pour forcer une redirection complète qui recharge tout
         // Cela garantit que la session est bien chargée
         window.location.href = "/";
