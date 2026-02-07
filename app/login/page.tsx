@@ -2,8 +2,8 @@
 
 import { SectionTitle } from "@/components";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
@@ -11,6 +11,23 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Vérifier s'il y a une erreur dans l'URL
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        Configuration: "Il y a un problème avec la configuration du serveur.",
+        AccessDenied: "Vous n'avez pas l'autorisation de vous connecter.",
+        Verification: "Le lien de vérification a expiré ou a déjà été utilisé.",
+        Default: "Une erreur est survenue lors de la connexion.",
+      };
+      toast.error(errorMessages[error] || errorMessages.Default);
+      // Nettoyer l'URL
+      router.replace("/login");
+    }
+  }, [searchParams, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
