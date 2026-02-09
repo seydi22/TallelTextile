@@ -1,6 +1,9 @@
 const getApiBaseUrl = () => {
+  // Toujours retourner une chaîne, jamais undefined
+  let url: string = '';
+  
   if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-    let url = process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, ''); // Retirer le slash final
+    url = process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, ''); // Retirer le slash final
     
     // Si l'URL contient /api à la fin, le retirer car les endpoints dans le code incluent déjà /api
     // Exemple: https://backend.vercel.app/api -> https://backend.vercel.app
@@ -15,7 +18,9 @@ const getApiBaseUrl = () => {
   }
   
   if (typeof window !== 'undefined') {
-    // Côté client en production : URLs relatives (même projet Vercel)
+    // Côté client en production : utiliser l'URL du backend depuis NEXT_PUBLIC_API_BASE_URL
+    // Si pas défini, utiliser une chaîne vide pour les URLs relatives
+    // Mais en production Vercel avec backend séparé, on DOIT avoir NEXT_PUBLIC_API_BASE_URL
     return '';
   }
   
@@ -23,7 +28,8 @@ const getApiBaseUrl = () => {
   return 'http://localhost:3001';
 };
 
-const apiBaseUrl = getApiBaseUrl();
+// Calculer apiBaseUrl de manière dynamique pour éviter les problèmes de build
+const apiBaseUrl = getApiBaseUrl() || '';
 
 // Logger l'URL de base utilisée (uniquement côté client pour éviter les logs serveur)
 if (typeof window !== 'undefined') {

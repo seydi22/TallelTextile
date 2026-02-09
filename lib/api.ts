@@ -19,19 +19,58 @@ async function safeJsonParse(response: Response): Promise<any> {
   }
 }
 
+// Fonction pour obtenir l'URL de base dynamiquement
+const getBaseUrl = () => {
+  // Si NEXT_PUBLIC_API_BASE_URL est défini, l'utiliser (sans /api à la fin)
+  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_API_BASE_URL) {
+    let url = process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, '');
+    url = url.replace(/\/api$/, ''); // Retirer /api si présent
+    return url;
+  }
+  
+  // Côté serveur ou si NEXT_PUBLIC_API_BASE_URL n'est pas défini
+  if (typeof window === 'undefined') {
+    // Côté serveur : utiliser localhost en développement
+    if (process.env.NODE_ENV === 'development') {
+      return 'http://localhost:3001';
+    }
+    // En production côté serveur, utiliser NEXT_PUBLIC_API_BASE_URL si disponible
+    if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+      let url = process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, '');
+      url = url.replace(/\/api$/, '');
+      return url;
+    }
+  }
+  
+  // En développement côté client
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3001';
+  }
+  
+  // En production côté client sans NEXT_PUBLIC_API_BASE_URL
+  // Retourner chaîne vide = URL relative (ne devrait pas arriver si configuré correctement)
+  return '';
+};
+
 export const apiClient = {
-  baseUrl: config.apiBaseUrl,
+  get baseUrl() {
+    // Calculer dynamiquement pour éviter les problèmes de build
+    return getBaseUrl();
+  },
   
   async request(endpoint: string, options: RequestInit = {}) {
     // Normaliser l'endpoint (s'assurer qu'il commence par /)
     const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     
-    // Utiliser l'URL de base ou une URL relative si baseUrl est vide (production Vercel)
-    const url = this.baseUrl ? `${this.baseUrl}${normalizedEndpoint}` : normalizedEndpoint;
+    // Obtenir l'URL de base dynamiquement
+    const baseUrl = this.baseUrl;
+    
+    // Utiliser l'URL de base ou une URL relative si baseUrl est vide
+    const url = baseUrl ? `${baseUrl}${normalizedEndpoint}` : normalizedEndpoint;
     
     // Logger l'URL complète utilisée (toujours en production pour debug)
     console.log(`🌐 [API Request] ${options.method || 'GET'} ${url}`);
-    console.log(`🌐 [API Request] baseUrl: "${this.baseUrl}"`);
+    console.log(`🌐 [API Request] baseUrl: "${baseUrl || '(vide - URL relative)'}"`);
     console.log(`🌐 [API Request] endpoint: "${endpoint}"`);
     console.log(`🌐 [API Request] NEXT_PUBLIC_API_BASE_URL: "${process.env.NEXT_PUBLIC_API_BASE_URL || 'non défini'}"`);
     
