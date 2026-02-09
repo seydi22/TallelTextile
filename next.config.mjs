@@ -38,6 +38,9 @@ const nextConfig = {
         },
       ];
     },
+    // Ne pas utiliser rewrites pour les routes API backend
+    // Les routes Next.js (comme /api/auth/*) seront gérées automatiquement
+    // Les routes backend seront routées via vercel.json
 };
 
 export default nextConfig;

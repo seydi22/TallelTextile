@@ -72,13 +72,10 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 jours
   },
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-change-in-production",
-  // Définir NEXTAUTH_URL explicitement pour éviter les avertissements
-  // En production Vercel, utiliser VERCEL_URL si NEXTAUTH_URL n'est pas défini
-  ...(process.env.NEXTAUTH_URL ? {
-    url: process.env.NEXTAUTH_URL,
-  } : process.env.VERCEL_URL ? {
-    url: `https://${process.env.VERCEL_URL}`,
-  } : {}),
+  // Ne pas définir 'url' explicitement - NextAuth détectera automatiquement l'URL
+  // de la requête actuelle, ce qui fonctionne mieux avec les URLs dynamiques de Vercel
+  // NEXTAUTH_URL est toujours recommandé comme variable d'environnement pour les avertissements,
+  // mais ne doit pas être utilisé dans l'option 'url' ici
   // Avertir si NEXTAUTH_SECRET n'est pas défini en production
   ...(process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET && {
     debug: true, // Activer le debug pour voir les avertissements
