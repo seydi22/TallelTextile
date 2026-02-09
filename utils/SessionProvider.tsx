@@ -30,12 +30,12 @@ const SessionProvider = ({ children, session }: CustomSessionProviderProps) => {
   
   // Rendre directement le provider NextAuth avec la session sécurisée
   // Activer le refetch pour que la session soit mise à jour après la connexion
+  // Ne PAS spécifier basePath - NextAuth le détectera automatiquement depuis la route
   return (
     <NextAuthSessionProvider 
       session={safeSession}
       refetchInterval={0} // Désactiver le refetch automatique, on le fera manuellement si besoin
       refetchOnWindowFocus={true} // Rafraîchir quand la fenêtre reprend le focus
-      basePath="/api/auth" // Forcer le basePath pour utiliser des URLs relatives
     >
       {children}
     </NextAuthSessionProvider>
