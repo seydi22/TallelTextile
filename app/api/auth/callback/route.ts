@@ -10,9 +10,12 @@ export const runtime = 'nodejs';
 const handler = NextAuth(authOptions);
 
 export async function GET(req: NextRequest) {
-  return handler(req as any, {} as any);
+  // Le contexte doit contenir les paramètres de route comme dans [...nextauth]
+  const context = { params: { nextauth: ['callback'] } };
+  return handler(req as any, context as any);
 }
 
 export async function POST(req: NextRequest) {
-  return handler(req as any, {} as any);
+  const context = { params: { nextauth: ['callback'] } };
+  return handler(req as any, context as any);
 }
