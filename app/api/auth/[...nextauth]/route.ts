@@ -6,9 +6,10 @@ export const runtime = 'nodejs';
 
 // Créer le handler NextAuth
 // NextAuth v4 avec Next.js 15 App Router
+// Le handler NextAuth est compatible avec l'App Router et gère automatiquement
+// toutes les routes sous /api/auth/* (providers, signin, callback, etc.)
 const handler = NextAuth(authOptions);
 
-// Exporter les handlers GET et POST
-// NextAuth gère automatiquement toutes les routes sous /api/auth/*
-// Le handler NextAuth est compatible avec Next.js App Router
+// Exporter directement le handler comme GET et POST
+// NextAuth gère automatiquement le routage interne
 export { handler as GET, handler as POST };
