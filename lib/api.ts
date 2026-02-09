@@ -23,8 +23,11 @@ export const apiClient = {
   baseUrl: config.apiBaseUrl,
   
   async request(endpoint: string, options: RequestInit = {}) {
+    // Normaliser l'endpoint (s'assurer qu'il commence par /)
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    
     // Utiliser l'URL de base ou une URL relative si baseUrl est vide (production Vercel)
-    const url = this.baseUrl ? `${this.baseUrl}${endpoint}` : endpoint;
+    const url = this.baseUrl ? `${this.baseUrl}${normalizedEndpoint}` : normalizedEndpoint;
     
     // Logger l'URL complète utilisée (toujours en production pour debug)
     console.log(`🌐 [API Request] ${options.method || 'GET'} ${url}`);

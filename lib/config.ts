@@ -1,7 +1,12 @@
 const getApiBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-    // Retirer le slash final s'il existe pour éviter les doubles slashes
-    return process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, '');
+    let url = process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, ''); // Retirer le slash final
+    
+    // Si l'URL contient /api à la fin, le retirer car les endpoints dans le code incluent déjà /api
+    // Exemple: https://backend.vercel.app/api -> https://backend.vercel.app
+    url = url.replace(/\/api$/, '');
+    
+    return url;
   }
   
   // En développement, utiliser le backend sur le port 3001
