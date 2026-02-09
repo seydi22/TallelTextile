@@ -50,6 +50,18 @@ export const apiClient = {
     // Normaliser l'endpoint (s'assurer qu'il commence par /)
     const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     
+    // Déclarer defaultOptions et controller AVANT toute utilisation
+    const defaultOptions: RequestInit = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    };
+    
+    // Ajouter un timeout par défaut de 10 secondes
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
     // Obtenir l'URL de base dynamiquement
     const baseUrl = this.baseUrl;
     
@@ -63,20 +75,25 @@ export const apiClient = {
       console.log(`🌐 [API Request] baseUrl: "${forcedUrl}" (forcé depuis NEXT_PUBLIC_API_BASE_URL)`);
       console.log(`🌐 [API Request] endpoint: "${endpoint}"`);
       
-      // Utiliser l'URL forcée
-      const response = await fetch(url, { 
-        ...defaultOptions, 
-        ...options,
-        signal: options.signal || controller.signal,
-      });
-      clearTimeout(timeoutId);
-      
-      if (response.status === 404) {
-        console.warn(`⚠️ [API] 404 Not Found: ${url}`);
-        console.warn(`💡 Vérifiez que le backend est démarré: cd server && node app.js`);
+      try {
+        // Utiliser l'URL forcée
+        const response = await fetch(url, { 
+          ...defaultOptions, 
+          ...options,
+          signal: options.signal || controller.signal,
+        });
+        clearTimeout(timeoutId);
+        
+        if (response.status === 404) {
+          console.warn(`⚠️ [API] 404 Not Found: ${url}`);
+          console.warn(`💡 Vérifiez que le backend est démarré: cd server && node app.js`);
+        }
+        
+        return response;
+      } catch (error: any) {
+        clearTimeout(timeoutId);
+        throw error;
       }
-      
-      return response;
     }
     
     // Utiliser l'URL de base ou une URL relative si baseUrl est vide
@@ -87,17 +104,6 @@ export const apiClient = {
     console.log(`🌐 [API Request] baseUrl: "${baseUrl || '(vide - URL relative)'}"`);
     console.log(`🌐 [API Request] endpoint: "${endpoint}"`);
     console.log(`🌐 [API Request] NEXT_PUBLIC_API_BASE_URL: "${process.env.NEXT_PUBLIC_API_BASE_URL || 'non défini'}"`);
-    
-    const defaultOptions: RequestInit = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    };
-    
-    // Ajouter un timeout par défaut de 10 secondes
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
     
     try {
       const response = await fetch(url, { 
