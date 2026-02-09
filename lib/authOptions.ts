@@ -36,6 +36,8 @@ export const authOptions: NextAuthOptions = {
         
         try {
           const backendUrl = getBackendUrl();
+          console.log(`[NextAuth authorize] Appel backend: ${backendUrl}/api/auth/login`);
+          console.log(`[NextAuth authorize] Email: ${credentials.email}`);
           
           // Appeler le backend pour l'authentification
           // Le backend vérifie email + password et retourne l'utilisateur si valide
@@ -50,17 +52,22 @@ export const authOptions: NextAuthOptions = {
             }),
           });
           
+          console.log(`[NextAuth authorize] Réponse backend: ${authResponse.status} ${authResponse.statusText}`);
+          
           if (!authResponse.ok) {
             // 401 = credentials invalides, 404 = utilisateur non trouvé
             if (authResponse.status === 401 || authResponse.status === 404) {
+              console.log(`[NextAuth authorize] Credentials invalides (${authResponse.status})`);
               return null; // NextAuth affichera "CredentialsSignin" error
             }
             // Autres erreurs (500, etc.)
-            console.error(`[NextAuth] Erreur backend: ${authResponse.status} ${authResponse.statusText}`);
+            const errorText = await authResponse.text();
+            console.error(`[NextAuth] Erreur backend: ${authResponse.status} ${authResponse.statusText}`, errorText);
             return null;
           }
           
           const authUser = await authResponse.json();
+          console.log(`[NextAuth authorize] Utilisateur authentifié:`, { id: authUser.id, email: authUser.email });
           
           // Retourner l'utilisateur au format attendu par NextAuth
           return {
@@ -75,6 +82,8 @@ export const authOptions: NextAuthOptions = {
             console.error("[NextAuth] Impossible de se connecter au backend:", getBackendUrl());
             return null;
           }
+          // Logger l'erreur complète pour debug
+          console.error("[NextAuth] Erreur complète:", JSON.stringify(error, null, 2));
           return null;
         }
       }
