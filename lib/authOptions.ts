@@ -1,8 +1,25 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import prisma from "@/lib/prisma";
-import bcrypt from "bcryptjs";
 import { User } from "@/types/session";
+
+// Fonction pour obtenir l'URL du backend
+const getBackendUrl = () => {
+  // En développement, utiliser localhost
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3001';
+  }
+  
+  // En production, utiliser l'URL du backend Vercel
+  // Si NEXT_PUBLIC_API_BASE_URL est défini, extraire l'URL de base (sans /api)
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, '');
+    // Si l'URL contient /api, retirer /api pour obtenir l'URL de base
+    return apiUrl.replace(/\/api$/, '');
+  }
+  
+  // Sinon, utiliser l'URL du backend Vercel directement
+  return process.env.BACKEND_URL || 'https://tallel-textile-j62y.vercel.app';
+};
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,31 +31,51 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email et mot de passe requis");
+          return null; // NextAuth gère mieux null que throw Error
         }
         
         try {
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email }
+          const backendUrl = getBackendUrl();
+          
+          // Appeler le backend pour l'authentification
+          // Le backend vérifie email + password et retourne l'utilisateur si valide
+          const authResponse = await fetch(`${backendUrl}/api/auth/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
           });
           
-          if (!user || !user.password) {
-            throw new Error("Email ou mot de passe incorrect");
+          if (!authResponse.ok) {
+            // 401 = credentials invalides, 404 = utilisateur non trouvé
+            if (authResponse.status === 401 || authResponse.status === 404) {
+              return null; // NextAuth affichera "CredentialsSignin" error
+            }
+            // Autres erreurs (500, etc.)
+            console.error(`[NextAuth] Erreur backend: ${authResponse.status} ${authResponse.statusText}`);
+            return null;
           }
           
-          const isValid = await bcrypt.compare(credentials.password, user.password);
-          if (!isValid) {
-            throw new Error("Email ou mot de passe incorrect");
-          }
+          const authUser = await authResponse.json();
           
+          // Retourner l'utilisateur au format attendu par NextAuth
           return {
-            id: user.id,
-            email: user.email,
-            role: user.role || "user"
+            id: authUser.id,
+            email: authUser.email,
+            role: authUser.role || "user"
           };
-        } catch (error) {
-          console.error("Erreur d'authentification:", error);
-          throw new Error("Erreur lors de l'authentification");
+        } catch (error: any) {
+          console.error("[NextAuth] Erreur d'authentification:", error);
+          // Erreur de connexion au backend
+          if (error?.message?.includes('fetch failed') || error?.code === 'ECONNREFUSED') {
+            console.error("[NextAuth] Impossible de se connecter au backend:", getBackendUrl());
+            return null;
+          }
+          return null;
         }
       }
     })
