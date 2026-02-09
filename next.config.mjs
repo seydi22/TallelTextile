@@ -16,6 +16,8 @@ const nextConfig = {
       },
     env: {
         NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+        // Ne pas exposer NEXTAUTH_URL côté client pour forcer NextAuth à utiliser l'URL relative
+        // NextAuth utilisera automatiquement window.location.origin côté client
     },
     async headers() {
       return [
