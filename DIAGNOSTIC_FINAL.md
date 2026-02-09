@@ -1,105 +1,118 @@
-# 🔍 Diagnostic Final : NextAuth 404 Persistant
+# 🔍 Diagnostic Final : signIn() retourne undefined
 
-## ✅ Ce qui fonctionne
+## 📋 Problème Persistant
 
-- ✅ Build Vercel réussi
-- ✅ Route `/api/auth/[...nextauth]` générée dans le build
-- ✅ `/api/test` fonctionne (routes Next.js OK)
-- ✅ Configuration des variables d'environnement correcte
+Malgré toutes les corrections, `signIn("credentials", {...})` retourne toujours `undefined`.
 
-## ❌ Problème Persistant
+## 🔴 Causes Possibles
 
-- ❌ `/api/auth/providers` retourne toujours 404
-- ❌ Connexion échoue avec l'erreur de départ
+### 1. **NextAuth ne trouve pas la route `/api/auth/callback/credentials`** ⚠️
 
-## 🔍 Tests à Effectuer MAINTENANT
+Quand `signIn("credentials", { redirect: false })` est appelé, NextAuth fait généralement :
+- POST vers `/api/auth/callback/credentials` avec les credentials
 
-### Test 1 : Vérifier `/api/auth/providers` directement
+**Vérification** : La route existe dans `app/api/auth/callback/credentials/route.ts`
 
-Ouvrir dans le navigateur :
-```
-https://tallel-textile.vercel.app/api/auth/providers
-```
+---
 
-**Résultat attendu :**
-- JSON avec les providers (succès)
-- 404 Not Found (problème)
-- HTML (page d'erreur - problème)
+### 2. **Le handler NextAuth ne fonctionne pas correctement** ⚠️
 
-### Test 2 : Vérifier `/api/auth/test`
+Le handler NextAuth dans les routes explicites pourrait ne pas fonctionner correctement avec le contexte `{ params: { nextauth: ['callback', 'credentials'] } }`.
 
-Ouvrir dans le navigateur :
-```
-https://tallel-textile.vercel.app/api/auth/test
-```
+**Solution possible** : Utiliser directement le handler sans wrapper.
 
-**Résultat attendu :**
-- JSON avec `{"message": "NextAuth route works", ...}` (succès)
-- 404 Not Found (problème)
+---
 
-### Test 3 : Vérifier les Logs Runtime Vercel
+### 3. **Le backend ne répond pas correctement** ⚠️
 
-1. Vercel Dashboard → Deployments
+La fonction `authorize()` dans `lib/authOptions.ts` appelle le backend, mais :
+- Le backend pourrait ne pas répondre
+- Il y a peut-être une erreur CORS
+- Le backend retourne une erreur
+
+**Vérification** : Vérifier les logs Vercel du backend pour voir si `/api/auth/login` est appelé.
+
+---
+
+### 4. **Configuration NextAuth incorrecte** ⚠️
+
+La configuration dans `lib/authOptions.ts` pourrait avoir un problème :
+- `pages.signIn: "/login"` pourrait causer un conflit
+- Les callbacks pourraient ne pas fonctionner correctement
+
+---
+
+## 🎯 Actions de Diagnostic
+
+### 1. Vérifier les Logs Vercel (Frontend)
+
+1. Vercel Dashboard → Projet Frontend → Deployments
 2. Cliquer sur le dernier déploiement
 3. Onglet **Functions** ou **Logs**
 4. Chercher :
-   - Requêtes vers `/api/auth/providers`
+   - Requêtes vers `/api/auth/callback/credentials`
+   - Requêtes vers `/api/auth/signin`
    - Erreurs NextAuth
-   - Erreurs de runtime
+   - Logs `[NextAuth authorize]`
 
-## 🎯 Causes Possibles Restantes
+### 2. Vérifier les Logs Vercel (Backend)
 
-### 1. Route NextAuth non accessible au runtime
+1. Vercel Dashboard → Projet Backend → Deployments
+2. Cliquer sur le dernier déploiement
+3. Onglet **Functions** ou **Logs**
+4. Chercher :
+   - Requêtes vers `/api/auth/login`
+   - Erreurs d'authentification
+   - Erreurs CORS
 
-**Symptôme :** Build OK mais 404 au runtime
+### 3. Tester Directement les Routes
 
-**Solution :** Vérifier les logs runtime Vercel pour voir si la fonction est appelée
+Tester dans le navigateur ou avec curl :
 
-### 2. Problème avec `runtime = 'nodejs'`
+```bash
+# Tester /api/auth/providers
+curl https://tallel-textile.vercel.app/api/auth/providers
 
-**Symptôme :** Route générée mais non accessible
+# Tester /api/auth/signin (GET)
+curl https://tallel-textile.vercel.app/api/auth/signin
 
-**Solution :** Vérifier que `export const runtime = 'nodejs'` est bien dans `route.ts`
-
-### 3. Cache Vercel
-
-**Symptôme :** Ancienne version toujours servie
-
-**Solution :** 
-- Vider le cache du navigateur (Ctrl+Shift+R)
-- Attendre quelques minutes (propagation)
-- Forcer un nouveau déploiement
-
-### 4. Problème avec la structure des fichiers
-
-**Symptôme :** Route existe mais Next.js ne la trouve pas
-
-**Vérification :**
-- `app/api/auth/[...nextauth]/route.ts` existe
-- Exporte bien `GET` et `POST`
-- Pas de conflit avec `vercel.json`
-
-## 🛠️ Solution de Dernier Recours
-
-Si rien ne fonctionne, créer une route de test simple pour vérifier que Next.js gère bien les routes dans `app/api/auth/` :
-
-```typescript
-// app/api/auth/test-simple/route.ts
-import { NextResponse } from 'next/server';
-
-export async function GET() {
-  return NextResponse.json({ test: "auth route works" });
-}
+# Tester le backend /api/auth/login
+curl -X POST https://tallel-textile-j62y.vercel.app/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"test"}'
 ```
 
-Tester : `https://tallel-textile.vercel.app/api/auth/test-simple`
+---
 
-Si ça fonctionne, le problème est spécifique à NextAuth.
-Si ça ne fonctionne pas, le problème est avec les routes dans `app/api/auth/`.
+## ✅ Solutions à Essayer
 
-## 📝 Actions Immédiates
+### Solution 1 : Simplifier la route `/api/auth/callback/credentials`
 
-1. **Tester `/api/auth/providers` dans le navigateur**
-2. **Tester `/api/auth/test` dans le navigateur**
-3. **Vérifier les logs runtime Vercel**
-4. **Me donner les résultats** pour que je puisse diagnostiquer plus précisément
+Utiliser directement le handler sans wrapper complexe.
+
+### Solution 2 : Vérifier que le backend répond
+
+Tester directement le backend pour confirmer qu'il fonctionne.
+
+### Solution 3 : Ajouter plus de logs
+
+Ajouter des logs dans :
+- `app/api/auth/callback/credentials/route.ts`
+- `lib/authOptions.ts` (déjà fait)
+- `app/login/page.tsx`
+
+### Solution 4 : Vérifier les variables d'environnement
+
+Vérifier dans Vercel que :
+- `NEXTAUTH_URL` est défini
+- `NEXTAUTH_SECRET` est défini
+- `NEXT_PUBLIC_API_BASE_URL` est défini
+
+---
+
+## 📝 Prochaines Étapes
+
+1. **Vérifier les logs Vercel** (frontend et backend)
+2. **Tester les routes directement** pour voir ce qui fonctionne
+3. **Simplifier les routes** si nécessaire
+4. **Ajouter plus de logs** pour comprendre le flux
