@@ -66,18 +66,23 @@ app.use(errorLogger);
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
+  'http://localhost:5000',
   process.env.NEXTAUTH_URL,
   process.env.FRONTEND_URL,
+  process.env.ADMIN_URL,
   // Support pour Vercel (URLs dynamiques du backend)
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-  // Support pour frontend Vercel séparé (ajoutez l'URL de votre frontend)
-  // Exemple: 'https://votre-frontend.vercel.app',
-  // Vous pouvez aussi utiliser une variable d'environnement FRONTEND_VERCEL_URL
+  // Support pour frontend Vercel séparé
   process.env.FRONTEND_VERCEL_URL,
+  // Support pour admin Vercel séparé
+  process.env.ADMIN_VERCEL_URL,
   // URLs Vercel du frontend (tallel-textile.vercel.app)
   'https://tallel-textile.vercel.app',
-  // Support pour toutes les URLs Vercel du frontend (preview, etc.)
+  // URLs Vercel de l'admin (admin.tallel-textile.vercel.app ou autre)
+  'https://admin.tallel-textile.vercel.app',
+  // Support pour toutes les URLs Vercel (preview, etc.)
   process.env.FRONTEND_VERCEL_URL ? `https://${process.env.FRONTEND_VERCEL_URL}` : null,
+  process.env.ADMIN_VERCEL_URL ? `https://${process.env.ADMIN_VERCEL_URL}` : null,
 ].filter(Boolean); // Remove undefined values
 
 // CORS configuration with origin validation
@@ -105,6 +110,12 @@ const corsOptions = {
     // Autoriser spécifiquement le frontend principal
     if (origin === 'https://tallel-textile.vercel.app') {
       console.log(`✅ [CORS] Allowing frontend origin: ${origin}`);
+      return callback(null, true);
+    }
+    
+    // Autoriser spécifiquement l'admin
+    if (origin === 'https://admin.tallel-textile.vercel.app' || origin.includes('admin.vercel.app')) {
+      console.log(`✅ [CORS] Allowing admin origin: ${origin}`);
       return callback(null, true);
     }
     
@@ -219,7 +230,7 @@ app.use((err, req, res, next) => {
 // Export pour Vercel Serverless Functions
 // Ne démarrer le serveur que si le fichier est exécuté directement (pas importé)
 if (require.main === module) {
-  const PORT = process.env.PORT || 3001;
+  const PORT = process.env.PORT || 5000;
 
   // Vérifier que DATABASE_URL est configuré avant de démarrer
   if (!process.env.DATABASE_URL) {

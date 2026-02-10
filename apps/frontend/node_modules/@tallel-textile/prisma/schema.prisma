@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id             String                   @id @default(auto()) @map("_id") @db.ObjectId
+  slug           String                   @unique
+  title          String
+  mainImage      String
+  price          Int                      @default(0)
+  rating         Int                      @default(0)
+  description    String
+  manufacturer   String
+  inStock        Int                      @default(1)
+  categoryId     String @db.ObjectId
+  category       Category                 @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  customerOrders customer_order_product[]
+  Wishlist       Wishlist[]
+
+  merchantId     String @db.ObjectId
+  merchant       Merchant @relation(fields: [merchantId], references: [id])
+  // Back relation for bulk upload items
+  bulkUploadItems bulk_upload_item[]      @relation("ProductBulkItems")
+}
+
+model Image {
+  imageID   String @id @default(auto()) @map("_id") @db.ObjectId
+  productID String @db.ObjectId
+  image     String
+}
+
+model User {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  email         String         @unique
+  password      String?
+  role          String?        @default("user")
+  Wishlist      Wishlist[]
+  notifications Notification[]
+  // Back relation for bulk upload batches
+  bulkUploadBatches bulk_upload_batch[] @relation("UserBatches")
+}
+
+model Customer_order {
+  id          String                   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  lastname    String
+  phone       String
+  email       String
+  company     String
+  adress      String
+  apartment   String
+  postalCode  String
+  dateTime    DateTime?                @default(now())
+  status      String
+  city        String
+  country     String
+  orderNotice String?
+  total       Int
+  products    customer_order_product[]
+}
+
+model customer_order_product {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  customerOrder   Customer_order @relation(fields: [customerOrderId], references: [id])
+  customerOrderId String @db.ObjectId
+  product         Product        @relation(fields: [productId], references: [id])
+  productId       String @db.ObjectId
+  quantity        Int
+}
+
+model Category {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String    @unique
+  image    String?   // Image path for category
+  products Product[] // Define a one-to-many relationship
+}
+
+model Wishlist {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String @db.ObjectId
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String @db.ObjectId
+}
+
+enum NotificationType {
+  ORDER_UPDATE
+  PAYMENT_STATUS
+  PROMOTION
+  SYSTEM_ALERT
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model Notification {
+  id        String               @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String @db.ObjectId
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean              @default(false)
+  priority  NotificationPriority @default(NORMAL)
+  metadata  Json?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([userId, type])
+  @@index([createdAt])
+}
+model Merchant {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  email       String?
+  phone       String?
+  address     String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // relasi
+  products Product[]
+}
+
+model bulk_upload_batch {
+  id         String              @id @default(auto()) @map("_id") @db.ObjectId
+  fileName   String?
+  createdAt  DateTime            @default(now())
+  status     BulkUploadStatus    @default(PENDING)
+  itemCount  Int                 @default(0)
+  errorCount Int                 @default(0)
+  items      bulk_upload_item[]
+
+  // optional uploader link if you later associate sessions/users
+  userId String? @db.ObjectId
+  user   User?                  @relation(name: "UserBatches", fields: [userId], references: [id])
+}
+
+model bulk_upload_item {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  batchId   String @db.ObjectId
+  batch     bulk_upload_batch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  // created product reference
+  productId String? @db.ObjectId
+  product   Product?          @relation(name: "ProductBulkItems", fields: [productId], references: [id], onDelete: SetNull)
+
+  // snapshot fields for auditing and re-commit edits
+  title         String
+  slug          String
+  price         Int
+  manufacturer  String?
+  description   String?
+  mainImage     String?
+  categoryId    String
+  inStock       Int
+
+  status        BulkUploadItemStatus @default(CREATED)
+  error         String?
+}
+
+enum BulkUploadStatus {
+  PENDING
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
+enum BulkUploadItemStatus {
+  CREATED
+  UPDATED
+  ERROR
+}
+
+model Settings {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  key             String   @unique
+  value           String
+  description     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

@@ -1,0 +1,399 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   DESIGN SYSTEM - Variables & Base Styles
+   ============================================ */
+
+@layer base {
+    :root {
+        /* Spacing Scale */
+        --spacing-xs: 0.5rem;    /* 8px */
+        --spacing-sm: 0.75rem;   /* 12px */
+        --spacing-md: 1rem;      /* 16px */
+        --spacing-lg: 1.5rem;    /* 24px */
+        --spacing-xl: 2rem;      /* 32px */
+        --spacing-2xl: 3rem;     /* 48px */
+        --spacing-3xl: 4rem;     /* 64px */
+
+        /* Border Radius */
+        --radius-sm: 0.25rem;   /* 4px */
+        --radius-md: 0.5rem;    /* 8px */
+        --radius-lg: 0.75rem;   /* 12px */
+        --radius-xl: 1rem;      /* 16px */
+        --radius-full: 9999px;
+
+        /* Shadows */
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+        /* Transitions */
+        --transition-fast: 150ms ease-in-out;
+        --transition-base: 300ms ease-in-out;
+        --transition-slow: 500ms ease-in-out;
+    }
+
+
+    body {
+        @apply bg-brand-bg-primary text-brand-text-primary font-sans antialiased;
+        font-feature-settings: "kern" 1, "liga" 1;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-serif font-semibold tracking-tight;
+        line-height: 1.2;
+    }
+
+    h1 {
+        @apply text-4xl md:text-5xl lg:text-6xl;
+    }
+
+    h2 {
+        @apply text-3xl md:text-4xl lg:text-5xl;
+    }
+
+    h3 {
+        @apply text-2xl md:text-3xl;
+    }
+
+    h4 {
+        @apply text-xl md:text-2xl;
+    }
+
+    p {
+        @apply leading-relaxed;
+    }
+
+    a {
+        @apply transition-colors duration-200;
+    }
+
+    button {
+        @apply transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    }
+
+    input, textarea, select {
+        @apply transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1;
+    }
+}
+
+/* ============================================
+   COMPONENT UTILITIES
+   ============================================ */
+
+@layer components {
+    /* Button Variants */
+    .btn {
+        @apply inline-flex items-center justify-center font-sans font-semibold rounded-md transition-all duration-200;
+        @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+        @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none;
+    }
+
+    .btn-primary {
+        @apply bg-brand-primary text-white hover:bg-brand-primary-hover;
+        @apply focus:ring-brand-primary shadow-md hover:shadow-lg;
+        @apply active:scale-[0.98];
+    }
+
+    .btn-secondary {
+        @apply bg-brand-secondary text-white hover:bg-gray-800;
+        @apply focus:ring-brand-secondary shadow-md hover:shadow-lg;
+        @apply active:scale-[0.98];
+    }
+
+    .btn-outline {
+        @apply bg-transparent border-2 border-brand-primary text-brand-primary;
+        @apply hover:bg-brand-primary hover:text-white;
+        @apply focus:ring-brand-primary;
+    }
+
+    .btn-ghost {
+        @apply bg-transparent text-brand-text-primary hover:bg-gray-100;
+        @apply focus:ring-gray-300;
+    }
+
+    .btn-sm {
+        @apply px-4 py-2 text-sm;
+    }
+
+    .btn-md {
+        @apply px-6 py-3 text-base;
+    }
+
+    .btn-lg {
+        @apply px-8 py-4 text-lg;
+    }
+
+    /* Card Components */
+    .card {
+        @apply bg-brand-bg-secondary rounded-lg shadow-md overflow-hidden;
+        @apply transition-all duration-300;
+    }
+
+    .card-hover {
+        @apply hover:shadow-xl hover:-translate-y-1;
+    }
+
+    .card-header {
+        @apply px-6 py-4 border-b border-gray-200;
+    }
+
+    .card-body {
+        @apply px-6 py-4;
+    }
+
+    .card-footer {
+        @apply px-6 py-4 border-t border-gray-200 bg-gray-50;
+    }
+
+    /* Form Components */
+    .form-group {
+        @apply mb-6;
+    }
+
+    .form-label {
+        @apply block text-sm font-medium text-brand-text-primary mb-2;
+    }
+
+    .form-input {
+        @apply block w-full rounded-md border border-gray-300 px-4 py-3;
+        @apply text-brand-text-primary placeholder-gray-400;
+        @apply focus:border-brand-primary focus:ring-brand-primary;
+        @apply transition-colors duration-200;
+        @apply disabled:bg-gray-100 disabled:cursor-not-allowed;
+    }
+
+    .form-textarea {
+        @apply form-input resize-y min-h-[100px];
+    }
+
+    .form-select {
+        @apply form-input appearance-none bg-white;
+    }
+
+    .form-checkbox {
+        @apply h-4 w-4 rounded border-gray-300 text-brand-primary;
+        @apply focus:ring-brand-primary focus:ring-offset-0;
+    }
+
+    .form-error {
+        @apply mt-2 text-sm text-red-600;
+    }
+
+    /* Section Utilities */
+    .section {
+        @apply py-12 md:py-16 lg:py-24;
+    }
+
+    .section-title {
+        @apply font-serif text-3xl md:text-4xl lg:text-5xl font-semibold text-center;
+        @apply text-brand-text-primary mb-4;
+    }
+
+    .section-subtitle {
+        @apply text-lg md:text-xl text-brand-text-secondary text-center max-w-3xl mx-auto;
+        @apply mb-12 md:mb-16;
+    }
+
+    .container-custom {
+        @apply max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8;
+    }
+
+    /* Product Card */
+    .product-card {
+        @apply relative flex flex-col bg-brand-bg-secondary rounded-lg overflow-hidden;
+        @apply transition-all duration-300 hover:shadow-xl;
+    }
+
+    .product-image-wrapper {
+        @apply relative w-full aspect-square overflow-hidden bg-gray-100;
+    }
+
+    .product-image {
+        @apply w-full h-full object-cover transition-transform duration-500;
+    }
+
+    .product-info {
+        @apply p-4 md:p-6 flex flex-col flex-grow;
+    }
+
+    .product-title {
+        @apply font-serif text-xl md:text-2xl text-brand-text-primary mb-2;
+        @apply line-clamp-2;
+    }
+
+    .product-price {
+        @apply font-sans text-lg md:text-xl font-semibold text-brand-text-secondary mt-auto;
+    }
+
+    /* Profile Card */
+    .profile-card {
+        @apply card card-hover text-center;
+    }
+
+    .profile-image {
+        @apply w-32 h-32 md:w-40 md:h-40 rounded-full mx-auto mb-4;
+        @apply object-cover border-4 border-white shadow-md;
+    }
+
+    .profile-name {
+        @apply font-serif text-2xl md:text-3xl font-bold text-brand-text-primary mb-2;
+    }
+
+    .profile-title {
+        @apply text-base md:text-lg font-semibold text-brand-primary mb-2;
+    }
+
+    .profile-bio {
+        @apply text-sm md:text-base text-brand-text-secondary text-left mt-4 space-y-3;
+        @apply leading-relaxed;
+    }
+
+    /* Navigation */
+    .nav-link {
+        @apply font-serif text-base md:text-lg text-brand-text-primary;
+        @apply hover:text-brand-primary transition-colors duration-200;
+        @apply relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5;
+        @apply after:bg-brand-primary after:transition-all after:duration-200;
+        @apply hover:after:w-full;
+    }
+
+    .nav-link-active {
+        @apply text-brand-primary after:w-full;
+    }
+
+    /* Badge */
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    }
+
+    .badge-primary {
+        @apply bg-brand-primary/10 text-brand-primary;
+    }
+
+    .badge-success {
+        @apply bg-green-100 text-green-800;
+    }
+
+    .badge-warning {
+        @apply bg-yellow-100 text-yellow-800;
+    }
+
+    .badge-error {
+        @apply bg-red-100 text-red-800;
+    }
+
+    /* Loading States */
+    .skeleton {
+        @apply animate-pulse bg-gray-200 rounded;
+    }
+
+    /* Focus Visible */
+    .focus-visible-ring {
+        @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary;
+        @apply focus-visible:ring-offset-2;
+    }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+@layer utilities {
+    /* Text Utilities */
+    .text-balance {
+        text-wrap: balance;
+    }
+
+    /* Scrollbar Styling */
+    .scrollbar-thin {
+        scrollbar-width: thin;
+        scrollbar-color: #BA8C3A #F5F5F5;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-track {
+        @apply bg-gray-100;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        @apply bg-brand-primary rounded-full;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        @apply bg-brand-primary-hover;
+    }
+
+    /* Gradient Utilities */
+    .gradient-overlay {
+        @apply absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60;
+    }
+
+    /* Animation Utilities */
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    /* Responsive Text */
+    .text-responsive {
+        @apply text-base md:text-lg lg:text-xl;
+    }
+
+    /* Aspect Ratios */
+    .aspect-product {
+        aspect-ratio: 3 / 4;
+    }
+
+    .aspect-hero {
+        aspect-ratio: 16 / 9;
+    }
+}

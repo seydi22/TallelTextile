@@ -1,15 +1,28 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "app.js",
+      "use": "@vercel/node"
+    }
+  ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/app.js"
+    },
+    {
+      "src": "/health",
+      "dest": "/app.js"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/app.js"
     }
   ],
   "functions": {
-    "api/index.js": {
-      "maxDuration": 30,
-      "memory": 1024
+    "app.js": {
+      "maxDuration": 30
     }
   },
   "env": {

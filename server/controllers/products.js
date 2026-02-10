@@ -247,13 +247,21 @@ const getAllProducts = asyncHandler(async (request, response) => {
         // Security: Handle category filter with proper validation
         if (filterObj.category && filterObj.category.equals) {
           console.log("🔍 [getAllProducts] Fetching products with category filter:", filterObj.category.equals);
-          // Find the category ID by name
-          const category = await prisma.category.findFirst({
-            where: { name: filterObj.category.equals },
-            select: { id: true },
+          // Find the category ID by name (case-insensitive search)
+          // Normalize the search term: lowercase and trim
+          const normalizedCategoryName = filterObj.category.equals.toLowerCase().trim();
+          
+          // Get all categories and find the one that matches (case-insensitive)
+          const allCategories = await prisma.category.findMany({
+            select: { id: true, name: true },
           });
           
+          const category = allCategories.find(
+            cat => cat.name.toLowerCase().trim() === normalizedCategoryName
+          );
+          
           if (category) {
+            console.log(`✅ [getAllProducts] Found category: ${category.name} (ID: ${category.id})`);
             products = await prisma.product.findMany({
               ...baseQueryOptions,
               where: {
@@ -263,7 +271,8 @@ const getAllProducts = asyncHandler(async (request, response) => {
             });
           } else {
             // Category not found, return empty array
-            console.warn(`⚠️ [getAllProducts] Category not found: ${filterObj.category.equals}`);
+            console.warn(`⚠️ [getAllProducts] Category not found: "${filterObj.category.equals}"`);
+            console.warn(`⚠️ [getAllProducts] Available categories:`, allCategories.map(c => c.name));
             products = [];
           }
         } else {
