@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import apiClient from '@tallel-textile/shared/lib/api';
 import { toast } from "react-hot-toast";
-import { formatPriceMRU } from "@/lib/formatPrice";
+import { formatPriceMRU } from "@tallel-textile/shared/lib/formatPrice";
 
 interface Product {
   id: string;

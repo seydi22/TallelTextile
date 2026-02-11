@@ -1,13 +1,13 @@
 "use client";
 import { DashboardSidebar } from '../../../../../components';
 import apiClient from '@tallel-textile/shared/lib/api';
-import { isValidEmailAddressFormat, isValidNameOrLastname } from "@/lib/utils";
+import { isValidEmailAddressFormat, isValidNameOrLastname } from "@tallel-textile/shared/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { formatPriceMRU } from "@/lib/formatPrice";
+import { formatPriceMRU } from "@tallel-textile/shared/lib/formatPrice";
 import { getImageUrl } from '../../../../../utils/imageUtils";
 
 interface OrderProduct {

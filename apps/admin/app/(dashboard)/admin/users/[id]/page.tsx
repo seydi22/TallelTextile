@@ -3,7 +3,7 @@ import { DashboardSidebar } from '../../../../../components';
 import React, { useEffect, useState, use } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { isValidEmailAddressFormat } from "@/lib/utils";
+import { isValidEmailAddressFormat } from "@tallel-textile/shared/lib/utils";
 import apiClient from '@tallel-textile/shared/lib/api';
 
 interface DashboardUserDetailsProps {
