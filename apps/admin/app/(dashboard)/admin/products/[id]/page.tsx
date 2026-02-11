@@ -11,7 +11,7 @@ import {
 import { nanoid } from "nanoid";
 import apiClient from '@tallel-textile/shared/lib/api';
 import config from '@tallel-textile/shared/lib/config';
-import { getImageUrl } from '../../../../../utils/imageUtils";
+import { getImageUrl } from '../../../../../utils/imageUtils';
 
 interface DashboardProductDetailsProps {
   params: Promise<{ id: string }>;
