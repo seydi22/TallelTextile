@@ -36,7 +36,6 @@ export { default as HeroZuma } from "./HeroZuma";
 export { default as IntroducingSection } from "./IntroducingSection";
 export { default as Heading } from "./Heading";
 export { default as NotificationCard } from "./NotificationCard";
-export { default as NotificationBell } from "./NotificationBell";
 export { default as HeartElement } from "./HeartElement";
 export { default as WishItem } from "./WishItem";
 export { default as ProductCarousel } from "./ProductCarousel";
