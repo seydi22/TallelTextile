@@ -17,6 +17,30 @@ interface DashboardProductDetailsProps {
   params: Promise<{ id: string }>;
 }
 
+interface Product {
+  id: string;
+  slug: string;
+  title: string;
+  mainImage: string;
+  price: number;
+  rating: number;
+  description: string;
+  manufacturer: string;
+  inStock: number;
+  categoryId: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface OtherImages {
+  imageID?: string;
+  productID?: string;
+  image: string;
+}
+
 const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
   const resolvedParams = use(params);
   const id = resolvedParams.id;

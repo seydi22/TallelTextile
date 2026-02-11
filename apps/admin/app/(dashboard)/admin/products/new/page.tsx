@@ -10,6 +10,21 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Merchant {
+  id: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  description?: string | null;
+  status?: string;
+}
+
 const AddNewProduct = () => {
   const router = useRouter();
   const [product, setProduct] = useState<{

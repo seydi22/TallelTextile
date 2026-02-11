@@ -121,7 +121,7 @@ export default function SessionTimeout() {
         clearInterval(refreshTimeoutRef.current);
       }
     };
-  }, [pathname, router, resetTimer]);
+  }, [pathname, router, resetTimer, refreshSession]);
 
   // Réinitialiser le timer quand le pathname change (navigation)
   useEffect(() => {
