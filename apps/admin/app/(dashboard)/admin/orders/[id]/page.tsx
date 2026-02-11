@@ -31,19 +31,20 @@ interface OrderProduct {
 
 interface Order {
   id: string;
-  adress: string;
-  apartment: string;
-  company: string;
+  adress?: string;
+  apartment?: string;
+  company?: string;
   dateTime: string;
-  email: string;
+  email?: string;
   lastname: string;
   name: string;
   phone: string;
-  postalCode: string;
-  city: string;
-  country: string;
-  orderNotice: string;
-  status: "processing" | "delivered" | "canceled";
+  postalCode?: string;
+  city?: string;
+  country?: string;
+  desiredDeliveryDate?: string | null;
+  orderNotice?: string;
+  status: "processing" | "delivered" | "canceled" | "pending" | "shipped" | "cancelled";
   total: number;
 }
 
@@ -62,6 +63,7 @@ const AdminSingleOrder = () => {
     postalCode: "",
     city: "",
     country: "",
+    desiredDeliveryDate: null,
     orderNotice: "",
     status: "processing",
     total: 0,
@@ -93,16 +95,9 @@ const AdminSingleOrder = () => {
 
   const updateOrder = async () => {
     if (
-      order?.name.length > 0 &&
-      order?.lastname.length > 0 &&
-      order?.phone.length > 0 &&
-      order?.email.length > 0 &&
-      order?.company.length > 0 &&
-      order?.adress.length > 0 &&
-      order?.apartment.length > 0 &&
-      order?.city.length > 0 &&
-      order?.country.length > 0 &&
-      order?.postalCode.length > 0
+      order?.name?.trim().length > 0 &&
+      order?.lastname?.trim().length > 0 &&
+      order?.phone?.trim().length > 0
     ) {
       if (!isValidNameOrLastname(order?.name)) {
         toast.error("You entered invalid name format");
@@ -114,18 +109,12 @@ const AdminSingleOrder = () => {
         return;
       }
 
-      if (!isValidEmailAddressFormat(order?.email)) {
+      if (order?.email?.trim() && !isValidEmailAddressFormat(order.email)) {
         toast.error("You entered invalid email format");
         return;
       }
 
-      apiClient.put(`/api/orders/${order?.id}`, {
-        method: "PUT", // or 'PUT'
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(order),
-      })
+      apiClient.put(`/api/orders/${order?.id}`, order)
         .then((response) => {
           if (response.status === 200) {
             toast.success("Order updated successfuly");
@@ -317,9 +306,25 @@ const AdminSingleOrder = () => {
               <input
                 type="text"
                 className="input input-bordered w-full max-w-xs"
-                value={order?.postalCode}
+                value={order?.postalCode ?? ""}
                 onChange={(e) =>
                   setOrder({ ...order, postalCode: e.target.value })
+                }
+              />
+            </label>
+          </div>
+
+          <div>
+            <label className="form-control w-full max-w-xs">
+              <div className="label">
+                <span className="label-text">Date livraison souhaitée:</span>
+              </div>
+              <input
+                type="date"
+                className="input input-bordered w-full max-w-xs"
+                value={order?.desiredDeliveryDate ? order.desiredDeliveryDate.split("T")[0] : ""}
+                onChange={(e) =>
+                  setOrder({ ...order, desiredDeliveryDate: e.target.value || null })
                 }
               />
             </label>

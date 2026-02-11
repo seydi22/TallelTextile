@@ -1,5 +1,6 @@
 "use client";
 import { SectionTitle } from "@/components";
+import CountrySelect from "@/components/CountrySelect";
 import { useProductStore } from "../_zustand/store";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -17,6 +18,8 @@ const CheckoutPage = () => {
     lastname: "",
     phone: "",
     email: "",
+    country: "",
+    desiredDeliveryDate: "",
     orderNotice: "",
   });
   
@@ -101,6 +104,8 @@ const CheckoutPage = () => {
         lastname: checkoutForm.lastname.trim(),
         phone: checkoutForm.phone.trim(),
         email: checkoutForm.email.trim() ? checkoutForm.email.trim().toLowerCase() : undefined,
+        country: checkoutForm.country.trim() || undefined,
+        desiredDeliveryDate: checkoutForm.desiredDeliveryDate.trim() || undefined,
         status: "pending",
         total: total,
         orderNotice: checkoutForm.orderNotice.trim(),
@@ -187,6 +192,8 @@ const CheckoutPage = () => {
         lastname: "",
         phone: "",
         email: "",
+        country: "",
+        desiredDeliveryDate: "",
         orderNotice: "",
       });
       clearCart();
@@ -449,6 +456,50 @@ const CheckoutPage = () => {
                     name="email-address"
                     autoComplete="email"
                     disabled={isSubmitting}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <label
+                  htmlFor="country-select"
+                  className="block text-sm font-medium text-brand-text-primary"
+                >
+                  Pays (optionnel)
+                </label>
+                <div className="mt-1">
+                  <CountrySelect
+                    value={checkoutForm.country}
+                    onChange={(val) => setCheckoutForm({ ...checkoutForm, country: val })}
+                    placeholder="Rechercher ou sélectionner un pays..."
+                    disabled={isSubmitting}
+                    id="country-select"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <label
+                  htmlFor="desired-delivery-date"
+                  className="block text-sm font-medium text-brand-text-primary"
+                >
+                  Date souhaitée pour la livraison (optionnel)
+                </label>
+                <div className="mt-1">
+                  <input
+                    value={checkoutForm.desiredDeliveryDate}
+                    onChange={(e) =>
+                      setCheckoutForm({
+                        ...checkoutForm,
+                        desiredDeliveryDate: e.target.value,
+                      })
+                    }
+                    type="date"
+                    id="desired-delivery-date"
+                    name="desired-delivery-date"
+                    disabled={isSubmitting}
+                    min={new Date().toISOString().split("T")[0]}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                   />
                 </div>

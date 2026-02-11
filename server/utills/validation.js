@@ -134,7 +134,7 @@ const paymentValidation = {
 
 // Order validation utilities
 const orderValidation = {
-  // Validate email format - FIXED: Check XSS patterns first
+  // Validate email format - FIXED: Check XSS patterns first (required)
   validateEmail: (email) => {
     if (!email || typeof email !== 'string') {
       throw new ValidationError('Email is required', 'email');
@@ -165,6 +165,55 @@ const orderValidation = {
     }
 
     return trimmedEmail;
+  },
+
+  // Validate optional email - returns null if empty, validates format if provided
+  validateOptionalEmail: (email) => {
+    if (!email || typeof email !== 'string') {
+      return null;
+    }
+    const trimmed = email.trim();
+    if (trimmed.length === 0) return null;
+    return orderValidation.validateEmail(trimmed);
+  },
+
+  // Validate optional address field
+  validateOptionalAddress: (value, fieldName = 'address') => {
+    if (!value || typeof value !== 'string') {
+      return null;
+    }
+    const trimmed = value.trim();
+    if (trimmed.length === 0) return null;
+    return orderValidation.validateAddress(trimmed, fieldName);
+  },
+
+  // Validate optional postal code
+  validateOptionalPostalCode: (postalCode) => {
+    if (!postalCode || typeof postalCode !== 'string') {
+      return null;
+    }
+    const trimmed = postalCode.trim();
+    if (trimmed.length === 0) return null;
+    return orderValidation.validatePostalCode(trimmed);
+  },
+
+  // Validate desired delivery date (optional, must be future date if provided)
+  validateDesiredDeliveryDate: (dateStr) => {
+    if (!dateStr || typeof dateStr !== 'string') {
+      return null;
+    }
+    const trimmed = dateStr.trim();
+    if (trimmed.length === 0) return null;
+    const date = new Date(trimmed);
+    if (isNaN(date.getTime())) {
+      throw new ValidationError('Invalid date format', 'desiredDeliveryDate');
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date < today) {
+      throw new ValidationError('Desired delivery date must be today or in the future', 'desiredDeliveryDate');
+    }
+    return date;
   },
 
   // Validate name format - Updated to support Unicode and Indonesian names
@@ -342,20 +391,23 @@ const validateOrderData = (orderData) => {
     }
   };
 
-  // Validate all required fields - ALL will be checked regardless of previous errors
+  // Required fields
   validatedData.name = safeValidate(orderValidation.validateName, orderData.name, 'name');
   validatedData.lastname = safeValidate(orderValidation.validateName, orderData.lastname, 'lastname');
-  validatedData.email = safeValidate(orderValidation.validateEmail, orderData.email, 'email');
   validatedData.phone = safeValidate(orderValidation.validatePhone, orderData.phone, 'phone');
-  validatedData.company = safeValidate(orderValidation.validateAddress, orderData.company, 'company');
-  validatedData.adress = safeValidate(orderValidation.validateAddress, orderData.adress, 'address');
-  validatedData.apartment = safeValidate(orderValidation.validateAddress, orderData.apartment, 'apartment');
-  validatedData.city = safeValidate(orderValidation.validateAddress, orderData.city, 'city');
-  validatedData.country = safeValidate(orderValidation.validateAddress, orderData.country, 'country');
-  validatedData.postalCode = safeValidate(orderValidation.validatePostalCode, orderData.postalCode, 'postalCode');
   validatedData.total = safeValidate(orderValidation.validateTotal, orderData.total, 'total');
   validatedData.status = safeValidate(orderValidation.validateStatus, orderData.status || 'pending', 'status');
-  
+
+  // Optional fields - email, address, etc. (supprimés du formulaire checkout)
+  validatedData.email = safeValidate(orderValidation.validateOptionalEmail, orderData.email, 'email') || null;
+  validatedData.company = safeValidate(orderValidation.validateOptionalAddress, orderData.company, 'company') || null;
+  validatedData.adress = safeValidate(orderValidation.validateOptionalAddress, orderData.adress || orderData.address, 'address') || null;
+  validatedData.apartment = safeValidate(orderValidation.validateOptionalAddress, orderData.apartment, 'apartment') || null;
+  validatedData.city = safeValidate(orderValidation.validateOptionalAddress, orderData.city, 'city') || null;
+  validatedData.country = safeValidate(orderValidation.validateOptionalAddress, orderData.country, 'country') || null;
+  validatedData.postalCode = safeValidate(orderValidation.validateOptionalPostalCode, orderData.postalCode, 'postalCode') || null;
+  validatedData.desiredDeliveryDate = safeValidate(orderValidation.validateDesiredDeliveryDate, orderData.desiredDeliveryDate, 'desiredDeliveryDate') || null;
+
   // Optional fields
   validatedData.orderNotice = orderData.orderNotice ? 
     orderData.orderNotice.trim().substring(0, 500) : ''; // Limit to 500 characters

@@ -17,7 +17,7 @@ import apiClient from '@tallel-textile/shared/lib/api';
 interface Order {
   id: string;
   name: string;
-  country: string;
+  country?: string | null;
   status: string;
   total: number;
   dateTime: string;
@@ -78,7 +78,7 @@ const AdminOrders = () => {
                     <div className="flex items-center gap-5">
                       <div>
                         <div className="font-bold">{order?.name}</div>
-                        <div className="text-sm opacity-50">{order?.country}</div>
+                        <div className="text-sm opacity-50">{order?.country ?? "-"}</div>
                       </div>
                     </div>
                   </td>

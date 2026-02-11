@@ -40,16 +40,19 @@ async function createCustomerOrder(request, response) {
       });
     }
 
-    // Check for duplicate orders (same email and total within last 1 minute) - less strict
+    // Check for duplicate orders (same phone+total or email+total within last 1 minute)
     const oneMinuteAgo = new Date(Date.now() - 1 * 60 * 1000);
+    const duplicateWhere = {
+      total: validatedData.total,
+      dateTime: { gte: oneMinuteAgo }
+    };
+    if (validatedData.email) {
+      duplicateWhere.email = validatedData.email;
+    } else {
+      duplicateWhere.phone = validatedData.phone;
+    }
     const duplicateOrder = await prisma.customer_order.findFirst({
-      where: {
-        email: validatedData.email,
-        total: validatedData.total,
-        dateTime: {
-          gte: oneMinuteAgo
-        }
-      }
+      where: duplicateWhere
     });
 
     if (duplicateOrder) {
@@ -67,14 +70,15 @@ async function createCustomerOrder(request, response) {
         name: validatedData.name,
         lastname: validatedData.lastname,
         phone: validatedData.phone,
-        email: validatedData.email,
-        company: validatedData.company,
-        adress: validatedData.adress,
-        apartment: validatedData.apartment,
-        postalCode: validatedData.postalCode,
+        email: validatedData.email ?? null,
+        company: validatedData.company ?? null,
+        adress: validatedData.adress ?? null,
+        apartment: validatedData.apartment ?? null,
+        postalCode: validatedData.postalCode ?? null,
         status: validatedData.status,
-        city: validatedData.city,
-        country: validatedData.country,
+        city: validatedData.city ?? null,
+        country: validatedData.country ?? null,
+        desiredDeliveryDate: validatedData.desiredDeliveryDate ?? null,
         orderNotice: validatedData.orderNotice,
         total: validatedData.total,
         dateTime: new Date()
@@ -101,8 +105,8 @@ async function createCustomerOrder(request, response) {
         }
       }
       
-      // Fallback: search by email if no userId or user not found
-      if (!user) {
+      // Fallback: search by email if no userId or user not found (only if email provided)
+      if (!user && validatedData.email) {
         console.log(`🔍 Searching user by email: ${validatedData.email}`);
         user = await prisma.user.findUnique({
           where: { email: validatedData.email }
@@ -220,14 +224,15 @@ async function updateCustomerOrder(request, response) {
         name: validatedData.name,
         lastname: validatedData.lastname,
         phone: validatedData.phone,
-        email: validatedData.email,
-        company: validatedData.company,
-        adress: validatedData.adress,
-        apartment: validatedData.apartment,
-        postalCode: validatedData.postalCode,
+        email: validatedData.email ?? null,
+        company: validatedData.company ?? null,
+        adress: validatedData.adress ?? null,
+        apartment: validatedData.apartment ?? null,
+        postalCode: validatedData.postalCode ?? null,
         status: validatedData.status,
-        city: validatedData.city,
-        country: validatedData.country,
+        city: validatedData.city ?? null,
+        country: validatedData.country ?? null,
+        desiredDeliveryDate: validatedData.desiredDeliveryDate ?? null,
         orderNotice: validatedData.orderNotice,
         total: validatedData.total,
       },
