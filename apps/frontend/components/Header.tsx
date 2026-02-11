@@ -11,9 +11,6 @@
 "use client";
 import { usePathname } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import { signOut } from "next-auth/react";
-import { useSafeSession } from "@/hooks/useSafeSession";
-import { useRouter } from "next/navigation";
 import HeaderTop from "./HeaderTop";
 import Link from "next/link";
 import { FaSearch } from "react-icons/fa";
@@ -37,29 +34,7 @@ interface Category {
 
 const Header = () => {
   const pathname = usePathname();
-  // Utiliser le hook sécurisé pour éviter les erreurs de destructuration
-  const sessionResult = useSafeSession();
-  const session = sessionResult?.data || null;
-  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
-  
-  // Vérifier si l'utilisateur est admin
-  const isAdmin = session?.user?.role === "admin";
-  const isLoggedIn = !!session;
-
-  // Fonction de déconnexion
-  const handleSignOut = async () => {
-    try {
-      await signOut({ 
-        redirect: false,
-        callbackUrl: "/"
-      });
-      router.push("/");
-      router.refresh();
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion:", error);
-    }
-  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -108,14 +83,6 @@ const Header = () => {
             >
               Boutique
             </Link>
-            {isLoggedIn && (
-              <button
-                onClick={handleSignOut}
-                className="font-sans text-brand-text-primary hover:text-brand-primary transition-colors"
-              >
-                Déconnexion
-              </button>
-            )}
           </div>
         </div>
       </header>
@@ -151,24 +118,6 @@ const Header = () => {
         <div className="flex gap-x-6 items-center">
           <button className="text-2xl hover:text-brand-primary transition-colors"><FaSearch /></button>
           <CartElement />
-          {/* Lien Admin - visible uniquement pour les admins connectés */}
-          {isAdmin && (
-            <Link
-              href="/admin"
-              className="nav-link"
-            >
-              Admin
-            </Link>
-          )}
-          {/* Bouton de déconnexion - visible si connecté */}
-          {isLoggedIn && (
-            <button
-              onClick={handleSignOut}
-              className="nav-link"
-            >
-              Déconnexion
-            </button>
-          )}
         </div>
       </div>
     </header>
