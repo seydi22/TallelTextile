@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Notification, NotificationFilters, NotificationResponse } from '@/types/notification';
+import { Notification, NotificationFilters, NotificationResponse } from '@tallel-textile/shared/types/notification';
 
 interface NotificationState {
   notifications: Notification[];
