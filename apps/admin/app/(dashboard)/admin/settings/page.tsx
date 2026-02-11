@@ -41,29 +41,10 @@ export default function SettingsPage() {
       const formData = new FormData();
       formData.append("uploadedFile", file);
 
-      // Utiliser la même logique que apiClient pour obtenir l'URL de base
-      const getBaseUrl = () => {
-        if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-          let url = process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, '');
-          url = url.replace(/\/api$/, '');
-          return url;
-        }
-        if (process.env.NODE_ENV === 'development') {
-          return 'http://localhost:5000';
-        }
-        return '';
-      };
-
-      const baseUrl = getBaseUrl();
-      const uploadUrl = baseUrl ? `${baseUrl}/api/main-image` : '/api/main-image';
-      console.log(`📤 [Upload] Upload URL: ${uploadUrl}`);
-      console.log(`📤 [Upload] Base URL: ${baseUrl || '(vide - URL relative)'}`);
-      console.log(`📤 [Upload] NEXT_PUBLIC_API_BASE_URL: ${process.env.NEXT_PUBLIC_API_BASE_URL || 'non défini'}`);
-      
-      const uploadResponse = await fetch(uploadUrl, {
+      // Utiliser la route API Next.js qui proxy vers le backend (évite les problèmes d'URL)
+      const uploadResponse = await fetch("/api/upload-banner", {
         method: "POST",
         body: formData,
-        // Ne pas définir Content-Type pour FormData, le navigateur le fait automatiquement
       });
 
       if (uploadResponse.ok) {

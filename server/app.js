@@ -76,10 +76,12 @@ const allowedOrigins = [
   process.env.FRONTEND_VERCEL_URL,
   // Support pour admin Vercel séparé
   process.env.ADMIN_VERCEL_URL,
-  // URLs Vercel du frontend (tallel-textile.vercel.app)
+  // URLs Vercel du frontend
   'https://tallel-textile.vercel.app',
-  // URLs Vercel de l'admin (admin.tallel-textile.vercel.app ou autre)
+  'https://tallel-textile-frontend.vercel.app',
+  // URLs Vercel de l'admin
   'https://admin.tallel-textile.vercel.app',
+  'https://tallel-textile-admin.vercel.app',
   // Support pour toutes les URLs Vercel (preview, etc.)
   process.env.FRONTEND_VERCEL_URL ? `https://${process.env.FRONTEND_VERCEL_URL}` : null,
   process.env.ADMIN_VERCEL_URL ? `https://${process.env.ADMIN_VERCEL_URL}` : null,

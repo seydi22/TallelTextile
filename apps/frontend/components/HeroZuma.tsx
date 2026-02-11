@@ -66,7 +66,7 @@ const HeroZuma = () => {
           priority
           className="object-cover"
           style={{ objectPosition: 'center' }}
-          unoptimized={bannerImage.startsWith('http')} // Désactiver l'optimisation Next.js pour les images Cloudinary
+          unoptimized={bannerImage.startsWith('http') || bannerImage.startsWith('/')} // Désactiver l'optimisation pour Cloudinary et chemins locaux (évite 404)
           onError={(e) => {
             console.error('📸 [HeroZuma] Image load error:', bannerImage);
             // En cas d'erreur de chargement, utiliser l'image par défaut

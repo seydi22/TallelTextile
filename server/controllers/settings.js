@@ -11,6 +11,10 @@ const getSetting = asyncHandler(async (request, response) => {
     });
 
     if (!setting) {
+      // Pour hero_banner et autres settings "optionnels", retourner 200 avec value null
+      if (key === "hero_banner") {
+        return response.status(200).json({ key, value: null, description: null });
+      }
       return response.status(404).json({
         error: "Setting not found",
       });
