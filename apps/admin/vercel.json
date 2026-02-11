@@ -3,6 +3,5 @@
   "devCommand": "cd ../.. && pnpm install && cd apps/admin && pnpm dev",
   "installCommand": "cd ../.. && pnpm install",
   "framework": "nextjs",
-  "outputDirectory": ".next",
-  "rootDirectory": "apps/admin"
+  "outputDirectory": ".next"
 }
