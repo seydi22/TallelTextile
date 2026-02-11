@@ -41,4 +41,4 @@ export { default as ProductCarousel } from "./ProductCarousel";
 export { default as ProfileCard } from "./ProfileCard";
 export { default as RatingPercentElement } from "./RatingPercentElement";
 export { default as SingleReview } from "./SingleReview";
-export { default as Loader } from "./Loader";
+export { Loader } from "./Loader";
