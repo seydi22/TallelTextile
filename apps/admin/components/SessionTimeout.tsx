@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
 
@@ -15,8 +15,31 @@ export default function SessionTimeout() {
   const lastActivityRef = useRef<number>(Date.now());
   const lastRefreshRef = useRef<number>(0);
 
+  // Fonction pour gérer le timeout
+  const handleTimeout = useCallback(async () => {
+    try {
+      // Vérifier si l'utilisateur est toujours connecté
+      const response = await fetch('/api/session');
+      const data = await response.json();
+      
+      if (data.session) {
+        // Déconnecter l'utilisateur
+        await fetch('/api/logout', { method: 'POST' });
+        
+        toast.error('Session expirée. Veuillez vous reconnecter.');
+        
+        // Rediriger vers la page de login
+        router.push('/login');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      // Rediriger quand même vers la page de login
+      router.push('/login');
+    }
+  }, [router]);
+
   // Fonction pour rafraîchir le timestamp de la session
-  const refreshSession = async () => {
+  const refreshSession = useCallback(async () => {
     try {
       await fetch('/api/session/refresh', { method: 'POST' });
       lastRefreshRef.current = Date.now();
@@ -24,10 +47,10 @@ export default function SessionTimeout() {
       // Ignorer les erreurs silencieusement
       console.error('Erreur lors du rafraîchissement de la session:', error);
     }
-  };
+  }, []);
 
   // Fonction pour réinitialiser le timer
-  const resetTimer = () => {
+  const resetTimer = useCallback(() => {
     lastActivityRef.current = Date.now();
     
     // Effacer le timer précédent
@@ -50,30 +73,7 @@ export default function SessionTimeout() {
     timeoutRef.current = setTimeout(() => {
       handleTimeout();
     }, INACTIVITY_TIMEOUT);
-  };
-
-  // Fonction pour gérer le timeout
-  const handleTimeout = async () => {
-    try {
-      // Vérifier si l'utilisateur est toujours connecté
-      const response = await fetch('/api/session');
-      const data = await response.json();
-      
-      if (data.session) {
-        // Déconnecter l'utilisateur
-        await fetch('/api/logout', { method: 'POST' });
-        
-        toast.error('Session expirée. Veuillez vous reconnecter.');
-        
-        // Rediriger vers la page de login
-        router.push('/login');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
-      // Rediriger quand même vers la page de login
-      router.push('/login');
-    }
-  };
+  }, [pathname, refreshSession, handleTimeout]);
 
   useEffect(() => {
     // Ne pas activer le timeout sur la page de login
@@ -121,14 +121,14 @@ export default function SessionTimeout() {
         clearInterval(refreshTimeoutRef.current);
       }
     };
-  }, [pathname, router]);
+  }, [pathname, router, resetTimer]);
 
   // Réinitialiser le timer quand le pathname change (navigation)
   useEffect(() => {
     if (pathname !== '/login') {
       resetTimer();
     }
-  }, [pathname]);
+  }, [pathname, resetTimer]);
 
   return null; // Ce composant ne rend rien
 }
