@@ -5,6 +5,12 @@ import { nanoid } from "nanoid";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
+interface User {
+  id: string;
+  email: string;
+  role: string | null;
+}
+
 const DashboardUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
 

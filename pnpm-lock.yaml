@@ -69,6 +69,9 @@ importers:
         specifier: ^3.22.4
         version: 3.25.76
     devDependencies:
+      '@types/cookie':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@types/dompurify':
         specifier: ^3.0.5
         version: 3.2.0
@@ -585,6 +588,10 @@ packages:
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
+
+  '@types/cookie@1.0.0':
+    resolution: {integrity: sha512-mGFXbkDQJ6kAXByHS7QAggRXgols0mAdP4MuXgloGY1tXokvzaFFM4SMqWvf7AH0oafI7zlFJwoGWzmhDqTZ9w==}
+    deprecated: This is a stub types definition. cookie provides its own type definitions, so you do not need this installed.
 
   '@types/dompurify@3.2.0':
     resolution: {integrity: sha512-Fgg31wv9QbLDA0SpTOXO3MaxySc4DKGLi8sna4/Utjo4r3ZRPdCt4UQee8BWr+Q5z21yifghREPJGYaEOEIACg==}
@@ -2630,6 +2637,10 @@ snapshots:
     dependencies:
       tslib: 2.8.1
     optional: true
+
+  '@types/cookie@1.0.0':
+    dependencies:
+      cookie: 0.6.0
 
   '@types/dompurify@3.2.0':
     dependencies:

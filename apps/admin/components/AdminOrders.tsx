@@ -14,6 +14,15 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import apiClient from '@tallel-textile/shared/lib/api';
 
+interface Order {
+  id: string;
+  name: string;
+  country: string;
+  status: string;
+  total: number;
+  dateTime: string;
+}
+
 const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
 

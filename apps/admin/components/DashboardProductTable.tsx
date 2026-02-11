@@ -19,6 +19,15 @@ import { sanitize } from "../lib/sanitize";
 import { formatPriceMRU } from "@tallel-textile/shared/lib/formatPrice";
 import { getImageUrl } from "../utils/imageUtils";
 
+interface Product {
+  id: string;
+  title: string;
+  mainImage: string;
+  price: number;
+  manufacturer: string;
+  inStock: number;
+}
+
 const DashboardProductTable = () => {
   const [products, setProducts] = useState<Product[]>([]);
 
