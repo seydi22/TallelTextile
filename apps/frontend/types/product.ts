@@ -9,4 +9,8 @@ export interface Product {
   manufacturer: string;
   inStock: number;
   categoryId: string;
+  category?: {
+    id: string;
+    name: string;
+  };
 }
