@@ -12,6 +12,7 @@
 import React, { useState } from "react";
 import QuantityInput from "./QuantityInput";
 import AddToCartSingleProductBtn from "./AddToCartSingleProductBtn";
+import { Product } from "@/types/product";
 
 const SingleProductDynamicFields = ({ product }: { product: Product }) => {
   const [quantityCount, setQuantityCount] = useState<number>(1);

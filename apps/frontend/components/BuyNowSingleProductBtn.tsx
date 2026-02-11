@@ -14,6 +14,16 @@ import React from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
+interface SingleProductBtnProps {
+  product: {
+    id: string | number;
+    title: string;
+    price: number;
+    mainImage: string;
+  };
+  quantityCount: number;
+}
+
 const BuyNowSingleProductBtn = ({
   product,
   quantityCount,

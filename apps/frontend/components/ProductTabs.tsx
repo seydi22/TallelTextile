@@ -15,6 +15,7 @@ import RatingPercentElement from "./RatingPercentElement";
 import SingleReview from "./SingleReview";
 import { formatCategoryName } from "@/utils/categoryFormating";
 import { sanitize, sanitizeHtml } from "@/lib/sanitize";
+import { Product } from "@/types/product";
 
 const ProductTabs = ({ product }: { product: Product }) => {
   const [currentProductTab, setCurrentProductTab] = useState<number>(0);

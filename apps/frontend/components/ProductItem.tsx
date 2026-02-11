@@ -17,6 +17,7 @@ import { formatPriceMRU } from '@tallel-textile/shared/lib/formatPrice';
 import { getImageUrl } from "@/utils/imageUtils";
 import { useProductStore } from "@/app/_zustand/store";
 import toast from "react-hot-toast";
+import { Product } from "@/types/product";
 
 const ProductItem = ({ product, color }: { product: Product; color?: string }) => {
   const { addToCart, calculateTotals } = useProductStore();
