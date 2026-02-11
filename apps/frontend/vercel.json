@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd ../.. && pnpm install && cd apps/frontend && pnpm build",
+  "buildCommand": "cd ../.. && pnpm install && pnpm --filter @tallel-textile/prisma generate && cd apps/frontend && pnpm build",
   "devCommand": "cd ../.. && pnpm install && cd apps/frontend && pnpm dev",
   "installCommand": "cd ../.. && pnpm install",
   "framework": "nextjs",

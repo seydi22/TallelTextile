@@ -4,9 +4,9 @@
   "private": true,
   "main": "./index.ts",
   "scripts": {
-    "generate": "prisma generate",
-    "push": "prisma db push",
-    "studio": "prisma studio"
+    "generate": "prisma generate --schema=./prisma/schema.prisma",
+    "push": "prisma db push --schema=./prisma/schema.prisma",
+    "studio": "prisma studio --schema=./prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^6.16.1"
