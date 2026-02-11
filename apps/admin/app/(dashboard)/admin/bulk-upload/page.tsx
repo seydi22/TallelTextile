@@ -10,7 +10,7 @@
 
 "use client";
 import { DashboardSidebar } from '../../../../components';
-import BulkUploadHistory from '../../../../components/BulkUploadHistory";
+import BulkUploadHistory from '../../../../components/BulkUploadHistory';
 import React, { useState, useRef } from "react";
 import toast from "react-hot-toast";
 import {

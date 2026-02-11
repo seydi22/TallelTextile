@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import DashboardSidebar from '../../../../../components/DashboardSidebar";
+import DashboardSidebar from '../../../../../components/DashboardSidebar';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import apiClient from '@tallel-textile/shared/lib/api';
