@@ -3,27 +3,29 @@
 // Name of the component: IntroducingSection.tsx
 // Developer: Aleksandar Kuzmanovic (Updated by Gemini for TALLEL TEXTILE)
 // Version: 2.0
-// Component call: <IntroducingSection />
-// Input parameters: no input parameters
-// Output: A two-column section with an image and text about the brand.
+// Component call: <IntroducingSection /> ou <IntroducingSection videoSrc="/videos/savoir-faire.mp4" />
+// Output: A two-column section with a video (MP4, sans son) and text about the brand.
 // *********************
 
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-const IntroducingSection = () => {
+const DEFAULT_VIDEO_SRC = "/savoir-faire.mp4";
+
+const IntroducingSection = ({ videoSrc = DEFAULT_VIDEO_SRC }: { videoSrc?: string }) => {
   return (
     <div className="bg-brand-bg-primary">
       <div className="max-w-screen-xl mx-auto grid grid-cols-1 md:grid-cols-2 items-stretch gap-12 px-6 py-24">
-        {/* Image Column */}
+        {/* Colonne vidéo (MP4, sans son, lecture auto en boucle) */}
         <div className="w-full h-full min-h-[600px] relative rounded-md overflow-hidden bg-gray-50">
-          <Image
-            src="/logo.png"
-            alt="Atelier de confection textile"
-            fill
-            style={{ objectFit: "cover" }}
-            sizes="(max-width: 768px) 100vw, 50vw"
+          <video
+            src={videoSrc}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            aria-label="Savoir-faire et atelier TALLEL TEXTILE"
           />
         </div>
 

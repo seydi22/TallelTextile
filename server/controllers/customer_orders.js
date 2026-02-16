@@ -40,10 +40,19 @@ async function createCustomerOrder(request, response) {
       });
     }
 
+    // Schema Prisma : total est Int, on convertit pour éviter une erreur 500
+    const totalAsInt = Math.round(Number(validatedData.total));
+    if (totalAsInt < 1) {
+      return response.status(400).json({
+        error: "Invalid order total",
+        details: [{ field: 'total', message: 'Order total must be at least 1' }]
+      });
+    }
+
     // Check for duplicate orders (same phone+total or email+total within last 1 minute)
     const oneMinuteAgo = new Date(Date.now() - 1 * 60 * 1000);
     const duplicateWhere = {
-      total: validatedData.total,
+      total: totalAsInt,
       dateTime: { gte: oneMinuteAgo }
     };
     if (validatedData.email) {
@@ -79,8 +88,8 @@ async function createCustomerOrder(request, response) {
         city: validatedData.city ?? null,
         country: validatedData.country ?? null,
         desiredDeliveryDate: validatedData.desiredDeliveryDate ?? null,
-        orderNotice: validatedData.orderNotice,
-        total: validatedData.total,
+        orderNotice: validatedData.orderNotice ?? '',
+        total: totalAsInt,
         dateTime: new Date()
       },
     });
@@ -146,6 +155,10 @@ async function createCustomerOrder(request, response) {
 
   } catch (error) {
     console.error("❌ Error creating order:", error);
+    console.error("❌ Error name:", error.name);
+    console.error("❌ Error message:", error.message);
+    if (error.code) console.error("❌ Error code:", error.code);
+    if (error.meta) console.error("❌ Error meta:", error.meta);
     
     // Handle specific Prisma errors
     if (error.code === 'P2002') {
