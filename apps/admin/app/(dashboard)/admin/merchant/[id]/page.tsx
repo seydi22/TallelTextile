@@ -129,7 +129,7 @@ const handleInputChange = (
       const msg = typeof error === "object" && error !== null && "message" in error
         ? (error as { message?: string }).message
         : "Impossible de supprimer le marchand";
-      toast.error(msg);
+      toast.error(msg ?? "Impossible de supprimer le marchand");
     }
   };
 
