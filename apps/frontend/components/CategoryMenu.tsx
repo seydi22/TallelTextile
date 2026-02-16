@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import CategoryItem from "./CategoryItem";
-import Heading from "./Heading";
+import CategoryItemCompact from "./CategoryItemCompact";
 import apiClient from '@tallel-textile/shared/lib/api';
 
 interface Category {
@@ -157,26 +156,26 @@ const CategoryMenu = () => {
   }
 
   return (
-    <section className="py-20 md:py-32 bg-white">
+    <section className="py-12 md:py-20 bg-white">
       <div className="max-w-screen-2xl mx-auto px-6 md:px-12">
-        {/* Section Title - Zuma style: minimal, elegant */}
-        <div className="text-center mb-16 md:mb-24">
-          <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-light text-brand-text-primary tracking-tight mb-4">
+        {/* Titre de section */}
+        <div className="text-center mb-10 md:mb-14">
+          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-light text-brand-text-primary tracking-tight mb-4">
             Nos Univers
           </h2>
           <div className="w-24 h-px bg-brand-primary mx-auto"></div>
         </div>
 
-        {/* Categories Grid - Zuma style: generous spacing, large images */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
+        {/* Grille compacte : plus de colonnes pour afficher beaucoup de catégories */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
           {categories.length > 0 ? (
             categories.map((item, index) => (
-              <div 
+              <div
                 key={item.id}
                 className="opacity-0 animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}
+                style={{ animationDelay: `${index * 0.05}s`, animationFillMode: "forwards" }}
               >
-                <CategoryItem
+                <CategoryItemCompact
                   title={item.title}
                   href={item.href}
                   bgImage={item.bgImage}

@@ -5,6 +5,7 @@ export { default as HeaderZuma } from "./HeaderZuma";
 export { default as SearchInput } from "./SearchInput";
 export { default as SimpleSlider } from "./SimpleSlider";
 export { default as CategoryItem } from "./CategoryItem";
+export { default as CategoryItemCompact } from "./CategoryItemCompact";
 export { default as CategoryMenu } from "./CategoryMenu";
 export { default as Incentives } from "./Incentives";
 export { default as ProductItem } from "./ProductItem";
