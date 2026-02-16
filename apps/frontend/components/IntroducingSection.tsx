@@ -14,10 +14,11 @@ const DEFAULT_VIDEO_SRC = "/savoir-faire.mp4";
 
 const IntroducingSection = ({ videoSrc = DEFAULT_VIDEO_SRC }: { videoSrc?: string }) => {
   return (
-    <div className="bg-brand-bg-primary">
-      <div className="max-w-screen-xl mx-auto grid grid-cols-1 md:grid-cols-2 items-stretch gap-12 px-6 py-24">
-        {/* Colonne vidéo (MP4, sans son, lecture auto en boucle) */}
-        <div className="w-full h-full min-h-[600px] relative rounded-md overflow-hidden bg-gray-50">
+    <section className="relative w-full">
+      {/* Grille : vidéo grande à gauche, texte dans une bande à droite — collée au hero au-dessus */}
+      <div className="grid grid-cols-1 md:grid-cols-12 min-h-[60vh] md:min-h-[75vh]">
+        {/* Vidéo immersive (collée au contenu du haut, pas d’espace) */}
+        <div className="relative md:col-span-8 lg:col-span-9 min-h-[50vh] md:min-h-[75vh] overflow-hidden bg-gray-900">
           <video
             src={videoSrc}
             autoPlay
@@ -29,12 +30,12 @@ const IntroducingSection = ({ videoSrc = DEFAULT_VIDEO_SRC }: { videoSrc?: strin
           />
         </div>
 
-        {/* Text Column */}
-        <div className="flex flex-col justify-center text-left gap-y-4">
-          <h2 className="font-serif text-4xl font-semibold text-brand-text-primary">
+        {/* Bande texte à droite */}
+        <div className="md:col-span-4 lg:col-span-3 flex flex-col justify-center p-6 md:p-8 lg:p-10 bg-brand-bg-primary text-left">
+          <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-semibold text-brand-text-primary mb-3 md:mb-4">
             Savoir-faire & Passion
           </h2>
-          <p className="font-sans text-brand-text-secondary text-lg leading-relaxed">
+          <p className="font-sans text-brand-text-secondary text-sm md:text-base leading-relaxed">
             Chez TALLEL TEXTILE, chaque fil est choisi avec soin, chaque motif est pensé pour l&apos;intemporalité. Nous croyons en une mode qui traverse le temps, alliant artisanat traditionnel et design contemporain pour créer des pièces uniques qui racontent une histoire.
           </p>
           <div className="mt-4">
@@ -44,7 +45,7 @@ const IntroducingSection = ({ videoSrc = DEFAULT_VIDEO_SRC }: { videoSrc?: strin
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
