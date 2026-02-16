@@ -20,6 +20,7 @@ const merchantRouter = require('./routes/merchant'); // Add this line
 const bulkUploadRouter = require('./routes/bulkUpload');
 const settingsRouter = require('./routes/settings');
 const authRouter = require('./routes/auth');
+const statsRouter = require('./routes/stats');
 var cors = require("cors");
 
 // Import logging middleware
@@ -175,6 +176,7 @@ app.use("/api/merchants", merchantRouter);
 app.use("/api/bulk-upload", bulkUploadRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/stats", statsRouter);
 
 // Health check endpoint (no rate limiting)
 app.get('/health', (req, res) => {
