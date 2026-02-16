@@ -245,27 +245,41 @@ async function updateCustomerOrder(request, response) {
       });
     }
 
+    const str = (v) => (v != null && String(v).trim() !== '' ? String(v).trim() : '');
     const updateData = {
       name: validatedData.name,
       lastname: validatedData.lastname,
       phone: validatedData.phone,
       email: validatedData.email ?? null,
-      company: validatedData.company ?? null,
-      adress: validatedData.adress ?? null,
-      apartment: validatedData.apartment ?? null,
-      postalCode: validatedData.postalCode ?? null,
+      company: str(validatedData.company),
+      adress: str(validatedData.adress),
+      apartment: str(validatedData.apartment),
+      postalCode: str(validatedData.postalCode),
       status: validatedData.status,
-      city: validatedData.city ?? null,
-      country: validatedData.country ?? null,
+      city: str(validatedData.city),
+      country: str(validatedData.country),
       desiredDeliveryDate: validatedData.desiredDeliveryDate ?? null,
-      orderNotice: validatedData.orderNotice,
+      orderNotice: validatedData.orderNotice ?? '',
       total: Math.round(Number(validatedData.total)),
     };
     if (validatedData.measurements != null) updateData.measurements = validatedData.measurements;
-    const updatedOrder = await prisma.customer_order.update({
-      where: { id: existingOrder.id },
-      data: updateData,
-    });
+    let updatedOrder;
+    try {
+      updatedOrder = await prisma.customer_order.update({
+        where: { id: existingOrder.id },
+        data: updateData,
+      });
+    } catch (updateErr) {
+      if (updateErr.message && updateErr.message.includes('Unknown argument') && updateErr.message.includes('measurements')) {
+        delete updateData.measurements;
+        updatedOrder = await prisma.customer_order.update({
+          where: { id: existingOrder.id },
+          data: updateData,
+        });
+      } else {
+        throw updateErr;
+      }
+    }
 
     // Create notification for status update if status changed
     if (existingOrder.status !== validatedData.status) {
