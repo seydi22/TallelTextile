@@ -73,21 +73,20 @@ async function createCustomerOrder(request, response) {
     }
 
     console.log("Creating order in database...");
-    // Champs optionnels : envoyer '' au lieu de null pour compatibilité avec les schémas où ils sont en String (requis)
-    const opt = (v) => (v != null && String(v).trim() !== '' ? String(v).trim() : '');
+    // Champs optionnels : null autorisé (schéma Prisma avec String? / DateTime?)
     const corder = await prisma.customer_order.create({
       data: {
         name: validatedData.name,
         lastname: validatedData.lastname,
         phone: validatedData.phone,
         email: validatedData.email ?? null,
-        company: opt(validatedData.company),
-        adress: opt(validatedData.adress),
-        apartment: opt(validatedData.apartment),
-        postalCode: opt(validatedData.postalCode),
+        company: validatedData.company ?? null,
+        adress: validatedData.adress ?? null,
+        apartment: validatedData.apartment ?? null,
+        postalCode: validatedData.postalCode ?? null,
         status: validatedData.status,
-        city: opt(validatedData.city),
-        country: opt(validatedData.country),
+        city: validatedData.city ?? null,
+        country: validatedData.country ?? null,
         desiredDeliveryDate: validatedData.desiredDeliveryDate ?? null,
         orderNotice: validatedData.orderNotice ?? '',
         total: totalAsInt,
