@@ -37,16 +37,32 @@ async function getSingleProductImages(request, response) {
   }
 }
 
+const MAX_EXTRA_IMAGES_PER_PRODUCT = 4; // 1 main + 4 = 5 photos max par produit
+
 async function createImage(request, response) {
   try {
     const { productID, image } = request.body;
-    const createImage = await prisma.image.create({
+    if (!productID || !image) {
+      return response.status(400).json({
+        error: "productID and image are required",
+      });
+    }
+    const count = await prisma.image.count({
+      where: { productID: String(productID) },
+    });
+    if (count >= MAX_EXTRA_IMAGES_PER_PRODUCT) {
+      return response.status(400).json({
+        error: "Maximum number of images reached",
+        details: `Un produit peut avoir au maximum ${MAX_EXTRA_IMAGES_PER_PRODUCT} images supplémentaires (5 photos au total avec l'image principale).`,
+      });
+    }
+    const created = await prisma.image.create({
       data: {
-        productID,
-        image,
+        productID: String(productID),
+        image: String(image),
       },
     });
-    return response.status(201).json(createImage);
+    return response.status(201).json(created);
   } catch (error) {
     console.error("Error creating image:", error);
     return response.status(500).json({ error: "Error creating image" });
@@ -95,7 +111,7 @@ async function deleteImage(request, response) {
     const { id } = request.params;
     await prisma.image.deleteMany({
       where: {
-        productID: String(id), // Converting id to string
+        productID: String(id),
       },
     });
     return response.status(204).send();
@@ -105,11 +121,29 @@ async function deleteImage(request, response) {
   }
 }
 
-
+async function deleteOneImage(request, response) {
+  try {
+    const { imageId } = request.params;
+    if (!imageId) {
+      return response.status(400).json({ error: "Image ID is required" });
+    }
+    await prisma.image.delete({
+      where: { imageID: imageId },
+    });
+    return response.status(204).send();
+  } catch (error) {
+    if (error.code === "P2025") {
+      return response.status(404).json({ error: "Image not found" });
+    }
+    console.error("Error deleting image:", error);
+    return response.status(500).json({ error: "Error deleting image" });
+  }
+}
 
 module.exports = {
   getSingleProductImages,
   createImage,
   updateImage,
   deleteImage,
+  deleteOneImage,
 };

@@ -8,7 +8,6 @@ import {
   convertCategoryNameToURLFriendly as convertSlugToURLFriendly,
   formatCategoryName,
 } from "../../../../../utils/categoryFormating";
-import { nanoid } from "nanoid";
 import apiClient from '@tallel-textile/shared/lib/api';
 import config from '@tallel-textile/shared/lib/config';
 import { getImageUrl } from '../../../../../utils/imageUtils';
@@ -36,10 +35,13 @@ interface Category {
 }
 
 interface OtherImages {
-  imageID?: string;
+  imageID: string;
   productID?: string;
   image: string;
 }
+
+const MAX_EXTRA_IMAGES = 4;
+const MAX_TOTAL_IMAGES = 5;
 
 const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
   const resolvedParams = use(params);
@@ -108,6 +110,53 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
     } catch (error) {
       console.error("Error updating product:", error);
       toast.error("Erreur lors de la mise à jour du produit");
+    }
+  };
+
+  const uploadExtraImage = async (file: File) => {
+    if (otherImages.length >= MAX_EXTRA_IMAGES) {
+      toast.error(`Maximum ${MAX_TOTAL_IMAGES} photos par produit (1 principale + ${MAX_EXTRA_IMAGES} supplémentaires).`);
+      return;
+    }
+    const formData = new FormData();
+    formData.append("uploadedFile", file);
+    try {
+      const uploadUrl = `${config.apiBaseUrl}/api/main-image`;
+      const response = await fetch(uploadUrl, { method: "POST", body: formData });
+      if (!response.ok) {
+        toast.error("Erreur lors de l'upload de l'image");
+        return;
+      }
+      const data = await response.json();
+      const imagePath = data.filename || data.url;
+      const createRes = await apiClient.post("/api/images", {
+        productID: id,
+        image: imagePath,
+      });
+      if (createRes.ok) {
+        const newImage = await createRes.json();
+        setOtherImages((prev) => [...prev, newImage]);
+        toast.success("Image ajoutée");
+      } else {
+        const err = await createRes.json().catch(() => ({}));
+        toast.error(err?.details || err?.error || "Impossible d'ajouter l'image");
+      }
+    } catch {
+      toast.error("Erreur lors de l'upload");
+    }
+  };
+
+  const removeExtraImage = async (imageId: string) => {
+    try {
+      const res = await apiClient.delete(`/api/images/one/${imageId}`);
+      if (res.ok || res.status === 204) {
+        setOtherImages((prev) => prev.filter((img) => img.imageID !== imageId));
+        toast.success("Image supprimée");
+      } else {
+        toast.error("Erreur lors de la suppression");
+      }
+    } catch {
+      toast.error("Erreur lors de la suppression");
     }
   };
 
@@ -362,21 +411,50 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
           )}
         </div>
         {/* Main image file upload div - end */}
-        {/* Other images file upload div - start */}
-        <div className="flex gap-x-1">
-          {otherImages &&
-            otherImages.map((image) => (
-              <Image
-                src={`/${image.image}`}
-                key={nanoid()}
-                alt="product image"
-                width={100}
-                height={100}
-                className="w-auto h-auto"
-              />
+        {/* Images supplémentaires (max 5 au total : 1 principale + 4) */}
+        <div>
+          <div className="label">
+            <span className="label-text">Images supplémentaires (max {MAX_TOTAL_IMAGES} au total : 1 principale + {MAX_EXTRA_IMAGES})</span>
+          </div>
+          <div className="flex flex-wrap gap-3 mt-2">
+            {otherImages.map((img) => (
+              <div key={img.imageID} className="relative group">
+                <Image
+                  src={getImageUrl(img.image)}
+                  alt="Photo produit"
+                  width={100}
+                  height={100}
+                  className="rounded object-cover border border-gray-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeExtraImage(img.imageID)}
+                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600 text-white text-sm leading-none opacity-90 group-hover:opacity-100"
+                  aria-label="Supprimer cette image"
+                >
+                  ×
+                </button>
+              </div>
             ))}
+          </div>
+          {otherImages.length < MAX_EXTRA_IMAGES && (
+            <div className="mt-2">
+              <input
+                type="file"
+                accept="image/*"
+                className="file-input file-input-bordered file-input-sm w-full max-w-xs"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadExtraImage(file);
+                  e.target.value = "";
+                }}
+              />
+              <p className="text-sm text-brand-text-secondary mt-1">
+                {otherImages.length} / {MAX_EXTRA_IMAGES} images supplémentaires
+              </p>
+            </div>
+          )}
         </div>
-        {/* Other images file upload div - end */}
         {/* Product description div - start */}
         <div>
           <label className="form-control">
