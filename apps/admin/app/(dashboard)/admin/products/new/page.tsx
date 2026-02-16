@@ -259,7 +259,7 @@ const AddNewProduct = () => {
           merchantId: prev.merchantId || data?.[0]?.id || "",
         }));
       } catch (e) {
-        toast.error("Failed to load merchants");
+        toast.error("Impossible de charger les marchands");
       }
     };
 

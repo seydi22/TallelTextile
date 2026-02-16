@@ -100,33 +100,33 @@ const AdminSingleOrder = () => {
       order?.phone?.trim().length > 0
     ) {
       if (!isValidNameOrLastname(order?.name)) {
-        toast.error("You entered invalid name format");
+        toast.error("Format du prénom invalide");
         return;
       }
 
       if (!isValidNameOrLastname(order?.lastname)) {
-        toast.error("You entered invalid lastname format");
+        toast.error("Format du nom invalide");
         return;
       }
 
       if (order?.email?.trim() && !isValidEmailAddressFormat(order.email)) {
-        toast.error("You entered invalid email format");
+        toast.error("Format de l'e-mail invalide");
         return;
       }
 
       apiClient.put(`/api/orders/${order?.id}`, order)
         .then((response) => {
           if (response.status === 200) {
-            toast.success("Order updated successfuly");
+            toast.success("Commande mise à jour avec succès");
           } else {
-            throw Error("There was an error while updating a order");
+            throw Error("Erreur lors de la mise à jour de la commande");
           }
         })
-        .catch((error) =>
-          toast.error("There was an error while updating a order")
+        .catch(() =>
+          toast.error("Erreur lors de la mise à jour de la commande")
         );
     } else {
-      toast.error("Please fill all fields");
+      toast.error("Veuillez remplir tous les champs obligatoires");
     }
   };
 
@@ -143,278 +143,205 @@ const AdminSingleOrder = () => {
         `/api/orders/${order?.id}`,
         requestOptions
       ).then((response) => {
-        toast.success("Order deleted successfully");
+        toast.success("Commande supprimée avec succès");
         router.push("/admin/orders");
       });
     });
   };
 
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto xl:h-full max-xl:flex-col max-xl:gap-y-5">
+    <div className="dashboard-layout bg-brand-bg-primary">
       <DashboardSidebar />
-      <div className="flex flex-col gap-y-7 xl:ml-5 w-full max-xl:px-5">
-        <h1 className="text-3xl font-semibold">Order details</h1>
-        <div className="mt-5">
-          <label className="w-full">
-            <div>
-              <span className="text-xl font-bold">Order ID:</span>
-              <span className="text-base"> {order?.id}</span>
-            </div>
-          </label>
-        </div>
-        <div className="flex gap-x-2 max-sm:flex-col">
-          <div>
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">Name:</span>
-              </div>
+      <main className="dashboard-content flex flex-col gap-6">
+        <h1 className="page-title">Détails de la commande</h1>
+        <div className="card card-body">
+          <p className="mb-4">
+            <span className="text-lg font-bold text-brand-text-primary">N° commande :</span>
+            <span className="ml-2">{order?.id}</span>
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="form-group">
+              <label htmlFor="order-name" className="form-label">Prénom</label>
               <input
+                id="order-name"
                 type="text"
-                className="input input-bordered w-full max-w-xs"
+                className="form-input max-w-xs"
                 value={order?.name}
                 onChange={(e) => setOrder({ ...order, name: e.target.value })}
               />
-            </label>
-          </div>
-          <div>
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">Lastname:</span>
-              </div>
-              <input
-                type="text"
-                className="input input-bordered w-full max-w-xs"
-                value={order?.lastname}
-                onChange={(e) =>
-                  setOrder({ ...order, lastname: e.target.value })
-                }
-              />
-            </label>
-          </div>
-        </div>
-
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Phone number:</span>
             </div>
+            <div className="form-group">
+              <label htmlFor="order-lastname" className="form-label">Nom</label>
+              <input
+                id="order-lastname"
+                type="text"
+                className="form-input max-w-xs"
+                value={order?.lastname}
+                onChange={(e) => setOrder({ ...order, lastname: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="order-phone" className="form-label">Téléphone</label>
             <input
+              id="order-phone"
               type="text"
-              className="input input-bordered w-full max-w-xs"
+              className="form-input max-w-xs"
               value={order?.phone}
               onChange={(e) => setOrder({ ...order, phone: e.target.value })}
             />
-          </label>
-        </div>
-
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Email adress:</span>
-            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="order-email" className="form-label">Adresse e-mail</label>
             <input
+              id="order-email"
               type="email"
-              className="input input-bordered w-full max-w-xs"
+              className="form-input max-w-xs"
               value={order?.email}
               onChange={(e) => setOrder({ ...order, email: e.target.value })}
             />
-          </label>
-        </div>
-
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Company (optional):</span>
-            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="order-company" className="form-label">Société (optionnel)</label>
             <input
+              id="order-company"
               type="text"
-              className="input input-bordered w-full max-w-xs"
+              className="form-input max-w-xs"
               value={order?.company}
               onChange={(e) => setOrder({ ...order, company: e.target.value })}
             />
-          </label>
-        </div>
-
-        <div className="flex gap-x-2 max-sm:flex-col">
-          <div>
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">Address:</span>
-              </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="form-group">
+              <label htmlFor="order-address" className="form-label">Adresse</label>
               <input
+                id="order-address"
                 type="text"
-                className="input input-bordered w-full max-w-xs"
+                className="form-input max-w-xs"
                 value={order?.adress}
                 onChange={(e) => setOrder({ ...order, adress: e.target.value })}
               />
-            </label>
-          </div>
-
-          <div>
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">Apartment, suite, etc. :</span>
-              </div>
+            </div>
+            <div className="form-group">
+              <label htmlFor="order-apartment" className="form-label">Appartement, étage, etc.</label>
               <input
+                id="order-apartment"
                 type="text"
-                className="input input-bordered w-full max-w-xs"
+                className="form-input max-w-xs"
                 value={order?.apartment}
-                onChange={(e) =>
-                  setOrder({ ...order, apartment: e.target.value })
-                }
+                onChange={(e) => setOrder({ ...order, apartment: e.target.value })}
               />
-            </label>
+            </div>
           </div>
-        </div>
-
-        <div className="flex gap-x-2 max-sm:flex-col">
-          <div>
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">City:</span>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="form-group">
+              <label htmlFor="order-city" className="form-label">Ville</label>
               <input
+                id="order-city"
                 type="text"
-                className="input input-bordered w-full max-w-xs"
+                className="form-input max-w-xs"
                 value={order?.city}
                 onChange={(e) => setOrder({ ...order, city: e.target.value })}
               />
-            </label>
-          </div>
-
-          <div>
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">Country:</span>
-              </div>
-              <input
-                type="text"
-                className="input input-bordered w-full max-w-xs"
-                value={order?.country}
-                onChange={(e) =>
-                  setOrder({ ...order, country: e.target.value })
-                }
-              />
-            </label>
-          </div>
-
-          <div>
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">Postal Code:</span>
-              </div>
-              <input
-                type="text"
-                className="input input-bordered w-full max-w-xs"
-                value={order?.postalCode ?? ""}
-                onChange={(e) =>
-                  setOrder({ ...order, postalCode: e.target.value })
-                }
-              />
-            </label>
-          </div>
-
-          <div>
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">Date livraison souhaitée:</span>
-              </div>
-              <input
-                type="date"
-                className="input input-bordered w-full max-w-xs"
-                value={order?.desiredDeliveryDate ? order.desiredDeliveryDate.split("T")[0] : ""}
-                onChange={(e) =>
-                  setOrder({ ...order, desiredDeliveryDate: e.target.value || null })
-                }
-              />
-            </label>
-          </div>
-        </div>
-
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Order status</span>
             </div>
+            <div className="form-group">
+              <label htmlFor="order-country" className="form-label">Pays</label>
+              <input
+                id="order-country"
+                type="text"
+                className="form-input max-w-xs"
+                value={order?.country}
+                onChange={(e) => setOrder({ ...order, country: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="order-postal" className="form-label">Code postal</label>
+              <input
+                id="order-postal"
+                type="text"
+                className="form-input max-w-xs"
+                value={order?.postalCode ?? ""}
+                onChange={(e) => setOrder({ ...order, postalCode: e.target.value })}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="order-delivery" className="form-label">Date de livraison souhaitée</label>
+              <input
+                id="order-delivery"
+                type="date"
+                className="form-input max-w-xs"
+                value={order?.desiredDeliveryDate ? order.desiredDeliveryDate.split("T")[0] : ""}
+                onChange={(e) => setOrder({ ...order, desiredDeliveryDate: e.target.value || null })}
+              />
+            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="order-status" className="form-label">Statut de la commande</label>
             <select
-              className="select select-bordered"
+              id="order-status"
+              className="form-select max-w-xs"
               value={order?.status}
               onChange={(e) =>
                 setOrder({
                   ...order,
-                  status: e.target.value as
-                    | "processing"
-                    | "delivered"
-                    | "canceled",
+                  status: e.target.value as "processing" | "delivered" | "canceled",
                 })
               }
             >
-              <option value="processing">Processing</option>
-              <option value="delivered">Delivered</option>
-              <option value="canceled">Canceled</option>
+              <option value="processing">En cours</option>
+              <option value="delivered">Livrée</option>
+              <option value="canceled">Annulée</option>
             </select>
-          </label>
-        </div>
-        <div>
-          <label className="form-control">
-            <div className="label">
-              <span className="label-text">Order notice:</span>
-            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="order-notice" className="form-label">Remarque commande</label>
             <textarea
-              className="textarea textarea-bordered h-24"
+              id="order-notice"
+              className="form-textarea max-w-xl h-24"
               value={order?.orderNotice || ""}
-              onChange={(e) =>
-                setOrder({ ...order, orderNotice: e.target.value })
-              }
-            ></textarea>
-          </label>
+              onChange={(e) => setOrder({ ...order, orderNotice: e.target.value })}
+            />
+          </div>
         </div>
-        <div>
+        <section className="card card-body" aria-label="Articles de la commande">
+          <h2 className="text-xl font-semibold text-brand-text-primary mb-4">Articles</h2>
           {orderProducts?.map((product) => (
-            <div className="flex items-center gap-x-4" key={product?.id}>
+            <div className="flex items-center gap-4 py-2 border-b border-gray-100 last:border-0" key={product?.id}>
               <Image
                 src={getImageUrl(product?.product?.mainImage)}
-                alt={product?.product?.title}
+                alt=""
                 width={50}
                 height={50}
-                className="w-auto h-auto"
+                className="rounded object-cover flex-shrink-0"
               />
-              <div>
-                <Link href={`/product/${product?.product?.slug}`}>
+              <div className="min-w-0">
+                <Link href={`/product/${product?.product?.slug}`} className="font-medium text-brand-primary hover:underline">
                   {product?.product?.title}
                 </Link>
-                <p>
-                  {formatPriceMRU(product?.product?.price)} × {product?.quantity} articles
+                <p className="text-sm text-brand-text-secondary">
+                  {formatPriceMRU(product?.product?.price)} × {product?.quantity} article{product?.quantity > 1 ? "s" : ""}
                 </p>
               </div>
             </div>
           ))}
-          <div className="flex flex-col gap-y-2 mt-10">
-            <p className="text-2xl">Sous-total: {formatPriceMRU(order?.total)}</p>
-            <p className="text-2xl">Taxe 20%: {formatPriceMRU(order?.total / 5)}</p>
-            <p className="text-2xl">Livraison: {formatPriceMRU(5)}</p>
-            <p className="text-3xl font-semibold">
-              Total: {formatPriceMRU(order?.total + order?.total / 5 + 5)}
+          <div className="mt-6 pt-4 border-t border-gray-200 space-y-1">
+            <p className="text-lg">Sous-total : {formatPriceMRU(order?.total)}</p>
+            <p className="text-lg">Taxe 20 % : {formatPriceMRU(order?.total / 5)}</p>
+            <p className="text-lg">Livraison : {formatPriceMRU(5)}</p>
+            <p className="text-2xl font-semibold text-brand-text-primary">
+              Total : {formatPriceMRU(order?.total + order?.total / 5 + 5)}
             </p>
           </div>
-          <div className="flex gap-x-2 max-sm:flex-col mt-5">
-            <button
-              type="button"
-              className="uppercase bg-brand-secondary px-10 py-5 text-lg border border-brand-primary font-bold text-white shadow-sm hover:bg-brand-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors duration-300"
-              onClick={updateOrder}
-            >
-              Update order
+          <div className="flex flex-wrap gap-3 mt-6">
+            <button type="button" className="btn btn-secondary btn-md" onClick={updateOrder}>
+              Mettre à jour la commande
             </button>
-            <button
-              type="button"
-              className="uppercase bg-red-600 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-red-700 hover:text-white focus:outline-none focus:ring-2"
-              onClick={deleteOrder}
-            >
-              Delete order
+            <button type="button" className="btn btn-danger btn-md" onClick={deleteOrder}>
+              Supprimer la commande
             </button>
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 };

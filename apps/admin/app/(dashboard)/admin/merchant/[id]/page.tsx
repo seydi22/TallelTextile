@@ -59,7 +59,7 @@ export default function MerchantDetailPage({
           router.push("/admin/merchant");
           return;
         }
-        throw new Error("Failed to fetch merchant");
+        throw new Error("Impossible de charger le marchand");
       }
       
       const data = await response.json();
@@ -74,7 +74,7 @@ export default function MerchantDetailPage({
       });
     } catch (error) {
       console.error("Error fetching merchant:", error);
-      toast.error("Failed to load merchant details");
+      toast.error("Impossible de charger les détails du marchand");
     } finally {
       setLoading(false);
     }
@@ -101,196 +101,195 @@ const handleInputChange = (
     const response = await apiClient.put(`/api/merchants/${id}`, formData);
 
     if (!response.ok) {
-      throw new Error("Failed to update merchant");
+      throw new Error("Impossible de mettre à jour le marchand");
     }
 
-    toast.success("Merchant updated successfully");
+    toast.success("Marchand mis à jour avec succès");
     fetchMerchant(); // Refresh data
   } catch (error) {
     console.error("Error updating merchant:", error);
-    toast.error("Failed to update merchant");
+    toast.error("Impossible de mettre à jour le marchand");
   }
 };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this merchant?")) {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce marchand ?")) {
       return;
     }
-    
     try {
       const response = await apiClient.delete(`/api/merchants/${id}`);
-      
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to delete merchant");
+        throw new Error(data.error || "Impossible de supprimer le marchand");
       }
-      
-      toast.success("Merchant deleted successfully");
+      toast.success("Marchand supprimé avec succès");
       router.push("/admin/merchant");
     } catch (error) {
       console.error("Error deleting merchant:", error);
-      toast.error(
-        typeof error === "object" && error !== null && "message" in error
-          ? (error as { message?: string }).message || "Failed to delete merchant"
-          : "Failed to delete merchant"
-      );
+      const msg = typeof error === "object" && error !== null && "message" in error
+        ? (error as { message?: string }).message
+        : "Impossible de supprimer le marchand";
+      toast.error(msg);
     }
   };
 
   if (loading) {
     return (
-      <div className="flex h-screen">
+      <div className="dashboard-layout bg-brand-bg-primary">
         <DashboardSidebar />
-        <div className="flex-1 p-10 flex items-center justify-center">
-          Loading merchant details...
-        </div>
+        <main className="dashboard-content flex items-center justify-center">
+          <p className="text-brand-text-secondary">Chargement des détails du marchand…</p>
+        </main>
       </div>
     );
   }
 
   if (!merchant) {
     return (
-      <div className="flex h-screen">
+      <div className="dashboard-layout bg-brand-bg-primary">
         <DashboardSidebar />
-        <div className="flex-1 p-10 flex items-center justify-center">
-          Merchant not found
-        </div>
+        <main className="dashboard-content flex items-center justify-center">
+          <p className="text-brand-text-secondary">Marchand introuvable.</p>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="dashboard-layout bg-brand-bg-primary">
       <DashboardSidebar />
-      <div className="flex-1 p-10 overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Merchant Details</h1>
-          <div className="flex gap-4">
-            <Link
-              href="/admin/merchant"
-              className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition"
-            >
-              Back to Merchants
+      <main className="dashboard-content overflow-y-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <h1 className="page-title mb-0">Détails du marchand</h1>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/admin/merchant" className="btn btn-ghost btn-md">
+              Retour aux marchands
             </Link>
-            <button
-              onClick={handleDelete}
-              className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600 transition"
-            >
-              Delete Merchant
+            <button type="button" onClick={handleDelete} className="btn btn-danger btn-md">
+              Supprimer le marchand
             </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Phone</label>
-              <input
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
-              >
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Inactive</option>
-              </select>
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-gray-700 font-medium mb-2">Address</label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-gray-700 font-medium mb-2">Description</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300 h-32"
-              ></textarea>
-            </div>
-            <div className="md:col-span-2">
-              <button 
-                type="submit"
-                className="bg-brand-secondary text-white px-6 py-2 rounded-md hover:bg-brand-primary transition-colors duration-300"
-              >
-                Save Changes
-              </button>
-            </div>
-          </form>
-        </div>
+        <section className="card mb-6">
+          <div className="card-body">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="form-group">
+                <label htmlFor="merchant-name" className="form-label">Nom</label>
+                <input
+                  id="merchant-name"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="merchant-email" className="form-label">E-mail</label>
+                <input
+                  id="merchant-email"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="form-input"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="merchant-phone" className="form-label">Téléphone</label>
+                <input
+                  id="merchant-phone"
+                  type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="form-input"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="merchant-status" className="form-label">Statut</label>
+                <select
+                  id="merchant-status"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleInputChange}
+                  className="form-select"
+                >
+                  <option value="ACTIVE">Actif</option>
+                  <option value="INACTIVE">Inactif</option>
+                </select>
+              </div>
+              <div className="md:col-span-2 form-group">
+                <label htmlFor="merchant-address" className="form-label">Adresse</label>
+                <input
+                  id="merchant-address"
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  className="form-input"
+                />
+              </div>
+              <div className="md:col-span-2 form-group">
+                <label htmlFor="merchant-description" className="form-label">Description</label>
+                <textarea
+                  id="merchant-description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  className="form-textarea"
+                  rows={5}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <button type="submit" className="btn btn-secondary btn-md">
+                  Enregistrer les modifications
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold mb-4">Merchant Products</h2>
-          {merchant.products.length > 0 ? (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="py-3 text-left">Title</th>
-                  <th className="py-3 text-left">Price</th>
-                  <th className="py-3 text-left">In Stock</th>
-                  <th className="py-3 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {merchant.products.map((product) => (
-                  <tr key={product.id} className="border-b hover:bg-gray-50">
-                    <td className="py-4">{product.title}</td>
-                    <td className="py-4">{formatPriceMRU(product.price)}</td>
-                    <td className="py-4">{product.inStock}</td>
-                    <td className="py-4">
-                      <Link
-                        href={`/admin/products/${product.id}`}
-                        className="text-brand-primary hover:underline"
-                      >
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="text-gray-500">No products for this merchant yet.</p>
-          )}
-        </div>
-      </div>
+        <section className="card">
+          <div className="card-body">
+            <h2 className="text-xl font-semibold text-brand-text-primary mb-4">Produits du marchand</h2>
+            {merchant.products.length > 0 ? (
+              <div className="table-wrapper overflow-x-auto">
+                <table className="table-admin">
+                  <thead>
+                    <tr>
+                      <th scope="col">Titre</th>
+                      <th scope="col">Prix</th>
+                      <th scope="col">En stock</th>
+                      <th scope="col">
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {merchant.products.map((product) => (
+                      <tr key={product.id}>
+                        <td className="font-medium text-brand-text-primary">{product.title}</td>
+                        <td>{formatPriceMRU(product.price)}</td>
+                        <td>{product.inStock}</td>
+                        <td>
+                          <Link href={`/admin/products/${product.id}`} className="btn btn-ghost btn-sm">
+                            Voir
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-brand-text-secondary">Aucun produit pour ce marchand pour le moment.</p>
+            )}
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

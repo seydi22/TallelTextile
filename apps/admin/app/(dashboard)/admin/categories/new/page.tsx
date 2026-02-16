@@ -104,10 +104,10 @@ const DashboardNewCategoryPage = () => {
     }
   };
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto xl:h-full max-xl:flex-col max-xl:gap-y-5">
+    <div className="dashboard-layout bg-brand-bg-primary">
       <DashboardSidebar />
-      <div className="flex flex-col gap-y-7 xl:pl-5 max-xl:px-5 w-full">
-        <h1 className="text-3xl font-semibold">Add new category</h1>
+      <main className="dashboard-content flex flex-col gap-6">
+        <h1 className="page-title">Ajouter une catégorie</h1>
         <div>
           <label className="form-control w-full max-w-xs">
             <div className="label">
@@ -160,10 +160,10 @@ const DashboardNewCategoryPage = () => {
             className="uppercase bg-brand-secondary px-10 py-5 text-lg border border-brand-primary font-bold text-white shadow-sm hover:bg-brand-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors duration-300"
             onClick={addNewCategory}
           >
-            Create category
+            Créer la catégorie
           </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

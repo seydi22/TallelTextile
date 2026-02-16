@@ -33,14 +33,14 @@ const DashboardSingleUserPage = ({ params }: DashboardUserDetailsProps) => {
       .delete(`/api/users/${id}`, requestOptions)
       .then((response) => {
         if (response.status === 204) {
-          toast.success("User deleted successfully");
+          toast.success("Utilisateur supprimé avec succès");
           router.push("/admin/users");
         } else {
-          throw Error("There was an error while deleting user");
+          throw Error("Erreur lors de la suppression de l'utilisateur");
         }
       })
-      .catch((error) => {
-        toast.error("There was an error while deleting user");
+      .catch(() => {
+        toast.error("Erreur lors de la suppression de l'utilisateur");
       });
   };
 
@@ -51,7 +51,7 @@ const DashboardSingleUserPage = ({ params }: DashboardUserDetailsProps) => {
       userInput.newPassword.length > 0
     ) {
       if (!isValidEmailAddressFormat(userInput.email)) {
-        toast.error("You entered invalid email address format");
+        toast.error("Format d'adresse e-mail invalide");
         return;
       }
 
@@ -65,21 +65,21 @@ const DashboardSingleUserPage = ({ params }: DashboardUserDetailsProps) => {
 
           if (response.status === 200) {
             await response.json();
-            toast.success("User successfully updated");
+            toast.success("Utilisateur mis à jour avec succès");
           } else {
             const errorData = await response.json();
-            toast.error(errorData.error || "Error while updating user");
+            toast.error(errorData.error || "Erreur lors de la mise à jour de l'utilisateur");
           }
         } catch (error) {
           console.error("Error updating user:", error);
-          toast.error("There was an error while updating user");
+          toast.error("Erreur lors de la mise à jour de l'utilisateur");
         }
       } else {
-        toast.error("Password must be longer than 7 characters");
+        toast.error("Le mot de passe doit contenir au moins 8 caractères");
         return;
       }
     } else {
-      toast.error("For updating a user you must enter all values");
+      toast.error("Veuillez remplir tous les champs pour mettre à jour l'utilisateur");
       return;
     }
   };
@@ -101,76 +101,59 @@ const DashboardSingleUserPage = ({ params }: DashboardUserDetailsProps) => {
   }, [id]);
 
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto xl:h-full max-xl:flex-col max-xl:gap-y-5">
+    <div className="dashboard-layout bg-brand-bg-primary">
       <DashboardSidebar />
-      <div className="flex flex-col gap-y-7 xl:pl-5 max-xl:px-5 w-full">
-        <h1 className="text-3xl font-semibold">User details</h1>
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Email:</span>
-            </div>
-            <input
-              type="email"
-              className="input input-bordered w-full max-w-xs"
-              value={userInput.email}
-              onChange={(e) =>
-                setUserInput({ ...userInput, email: e.target.value })
-              }
-            />
-          </label>
+      <main className="dashboard-content flex flex-col gap-6">
+        <h1 className="page-title">Détails de l&apos;utilisateur</h1>
+        <div className="form-group">
+          <label htmlFor="user-email" className="form-label">E-mail</label>
+          <input
+            id="user-email"
+            type="email"
+            className="form-input max-w-xs"
+            value={userInput.email}
+            onChange={(e) =>
+              setUserInput({ ...userInput, email: e.target.value })
+            }
+          />
         </div>
 
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">New password:</span>
-            </div>
-            <input
-              type="password"
-              className="input input-bordered w-full max-w-xs"
-              onChange={(e) =>
-                setUserInput({ ...userInput, newPassword: e.target.value })
-              }
-              value={userInput.newPassword}
-            />
-          </label>
+        <div className="form-group">
+          <label htmlFor="user-new-password" className="form-label">Nouveau mot de passe</label>
+          <input
+            id="user-new-password"
+            type="password"
+            className="form-input max-w-xs"
+            onChange={(e) =>
+              setUserInput({ ...userInput, newPassword: e.target.value })
+            }
+            value={userInput.newPassword}
+          />
         </div>
 
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">User role: </span>
-            </div>
-            <select
-              className="select select-bordered"
-              value={userInput.role}
-              onChange={(e) =>
-                setUserInput({ ...userInput, role: e.target.value })
-              }
-            >
-              <option value="admin">admin</option>
-              <option value="user">user</option>
-            </select>
-          </label>
+        <div className="form-group">
+          <label htmlFor="user-role" className="form-label">Rôle</label>
+          <select
+            id="user-role"
+            className="form-select max-w-xs"
+            value={userInput.role}
+            onChange={(e) =>
+              setUserInput({ ...userInput, role: e.target.value })
+            }
+          >
+            <option value="admin">Administrateur</option>
+            <option value="user">Utilisateur</option>
+          </select>
         </div>
-        <div className="flex gap-x-2 max-sm:flex-col">
-          <button
-            type="button"
-            className="uppercase bg-brand-secondary px-10 py-5 text-lg border border-brand-primary font-bold text-white shadow-sm hover:bg-brand-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors duration-300"
-            onClick={updateUser}
-          >
-            Update user
+        <div className="flex flex-wrap gap-3">
+          <button type="button" className="btn btn-secondary btn-md" onClick={updateUser}>
+            Mettre à jour l&apos;utilisateur
           </button>
-          <button
-            type="button"
-            className="uppercase bg-red-600 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-red-700 hover:text-white focus:outline-none focus:ring-2"
-            onClick={deleteUser}
-          >
-            Delete user
+          <button type="button" className="btn btn-danger btn-md" onClick={deleteUser}>
+            Supprimer l&apos;utilisateur
           </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

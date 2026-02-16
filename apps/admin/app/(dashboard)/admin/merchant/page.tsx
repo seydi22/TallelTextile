@@ -1,8 +1,9 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import DashboardSidebar from "../../../../components/DashboardSidebar";
 import Link from "next/link";
-import apiClient from '@tallel-textile/shared/lib/api';
+import apiClient from "@tallel-textile/shared/lib/api";
 import { toast } from "react-hot-toast";
 
 interface Merchant {
@@ -16,6 +17,11 @@ interface Merchant {
   products: any[];
 }
 
+const statusLabels: Record<string, string> = {
+  ACTIVE: "Actif",
+  INACTIVE: "Inactif",
+};
+
 export default function MerchantPage() {
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,27 +30,17 @@ export default function MerchantPage() {
     try {
       setLoading(true);
       const response = await apiClient.get("/api/merchants");
-      if (!response.ok) {
-        throw new Error("Failed to fetch merchants");
-      }
+      if (!response.ok) throw new Error("Impossible de charger les marchands");
       const data = await response.json();
-      setMerchants(data);
-    } catch (error: any) {
-      // Gestion améliorée des erreurs
-      const errorMessage = error?.message || String(error);
-      
-      // Détecter les erreurs de connexion au backend (utilise la propriété isConnectionError de apiClient)
-      if (error?.isConnectionError || errorMessage.includes('fetch failed') || errorMessage.includes('Failed to fetch') || errorMessage.includes('ECONNREFUSED') || errorMessage.includes('Backend API non disponible')) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('⚠️ Backend API non disponible');
-          console.info('💡 Démarrez le backend avec: cd server && node app.js');
-        }
+      setMerchants(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      const msg = err?.message || String(err);
+      if (msg.includes("fetch failed") || msg.includes("ECONNREFUSED") || msg.includes("non disponible")) {
         toast.error("Le serveur backend n'est pas disponible. Veuillez démarrer le serveur.");
       } else {
-        console.error("Error fetching merchants:", error);
         toast.error("Échec du chargement des marchands");
       }
-      setMerchants([]); // S'assurer que merchants est un tableau vide en cas d'erreur
+      setMerchants([]);
     } finally {
       setLoading(false);
     }
@@ -55,73 +51,65 @@ export default function MerchantPage() {
   }, []);
 
   return (
-    <div className="flex h-screen">
+    <div className="dashboard-layout bg-brand-bg-primary">
       <DashboardSidebar />
-      <div className="flex-1 p-10 overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Merchants</h1>
-          <Link
-            href="/admin/merchant/new"
-            className="bg-brand-secondary text-white px-6 py-2 rounded-md hover:bg-brand-primary transition-colors duration-300"
-          >
-            Add Merchant
+      <main className="dashboard-content">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+          <h1 className="page-title mb-0">Marchands</h1>
+          <Link href="/admin/merchant/new" className="btn btn-secondary btn-md">
+            Ajouter un marchand
           </Link>
         </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          {loading ? (
-            <div className="text-center py-10">Loading merchants...</div>
-          ) : merchants.length > 0 ? (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="py-3 text-left">Name</th>
-                  <th className="py-3 text-left">Email</th>
-                  <th className="py-3 text-left">Status</th>
-                  <th className="py-3 text-left">Products</th>
-                  <th className="py-3 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {merchants.map((merchant) => (
-                  <tr key={merchant.id} className="border-b hover:bg-gray-50">
-                    <td className="py-4">{merchant.name}</td>
-                    <td className="py-4">{merchant.email || "N/A"}</td>
-                    <td className="py-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          merchant.status === "ACTIVE"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {merchant.status}
-                      </span>
-                    </td>
-                    <td className="py-4">{merchant.products.length}</td>
-                    <td className="py-4">
-                      <Link
-                        href={`/admin/merchant/${merchant.id}`}
-                        className="text-brand-primary hover:underline mr-3"
-                      >
-                        View
-                      </Link>
-                      <Link
-                        href={`/admin/merchant/${merchant.id}`}
-                        className="text-brand-primary hover:underline"
-                      >
-                        Edit
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div className="text-center py-10">No merchants found</div>
-          )}
+        <div className="card">
+          <div className="card-body">
+            {loading ? (
+              <div className="text-center py-12 text-brand-text-secondary">Chargement des marchands…</div>
+            ) : merchants.length > 0 ? (
+              <div className="table-wrapper overflow-x-auto">
+                <table className="table-admin">
+                  <thead>
+                    <tr>
+                      <th scope="col">Nom</th>
+                      <th scope="col">E-mail</th>
+                      <th scope="col">Statut</th>
+                      <th scope="col">Produits</th>
+                      <th scope="col">
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {merchants.map((merchant) => (
+                      <tr key={merchant.id}>
+                        <td className="font-medium text-brand-text-primary">{merchant.name}</td>
+                        <td>{merchant.email ?? "—"}</td>
+                        <td>
+                          <span
+                            className={`badge ${merchant.status === "ACTIVE" ? "badge-success" : "badge-error"}`}
+                          >
+                            {statusLabels[merchant.status] ?? merchant.status}
+                          </span>
+                        </td>
+                        <td>{merchant.products?.length ?? 0}</td>
+                        <td>
+                          <Link href={`/admin/merchant/${merchant.id}`} className="btn btn-ghost btn-sm mr-2">
+                            Voir
+                          </Link>
+                          <Link href={`/admin/merchant/${merchant.id}`} className="btn btn-ghost btn-sm">
+                            Modifier
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-12 text-brand-text-secondary">Aucun marchand trouvé.</div>
+            )}
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

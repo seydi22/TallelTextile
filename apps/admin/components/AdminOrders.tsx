@@ -1,18 +1,8 @@
 "use client";
 
-// *********************
-// Role of the component: Component that displays all orders on admin dashboard page
-// Name of the component: AdminOrders.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <AdminOrders />
-// Input parameters: No input parameters
-// Output: Table with all orders
-// *********************
-
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import apiClient from '@tallel-textile/shared/lib/api';
+import apiClient from "@tallel-textile/shared/lib/api";
 
 interface Order {
   id: string;
@@ -23,6 +13,15 @@ interface Order {
   dateTime: string;
 }
 
+const statusLabels: Record<string, string> = {
+  processing: "En cours",
+  delivered: "Livrée",
+  canceled: "Annulée",
+  cancelled: "Annulée",
+  pending: "En attente",
+  shipped: "Expédiée",
+};
+
 const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
 
@@ -30,96 +29,90 @@ const AdminOrders = () => {
     const fetchOrders = async () => {
       const response = await apiClient.get("/api/orders");
       const data = await response.json();
-      
-      setOrders(data?.orders);
+      setOrders(data?.orders ?? []);
     };
     fetchOrders();
   }, []);
 
   return (
-    <div className="xl:ml-5 w-full max-xl:mt-5 ">
-      <h1 className="text-3xl font-semibold text-center mb-5">All orders</h1>
-      <div className="overflow-x-auto">
-        <table className="table table-md table-pin-cols">
-          {/* head */}
+    <section className="w-full" aria-labelledby="orders-heading">
+      <h1 id="orders-heading" className="page-title text-center">
+        Toutes les commandes
+      </h1>
+      <div className="table-wrapper overflow-x-auto max-h-[80vh]">
+        <table className="table-admin" role="grid">
           <thead>
             <tr>
-              <th>
-                <label>
-                  <input type="checkbox" className="checkbox" />
+              <th scope="col">
+                <span className="sr-only">Sélection</span>
+                <label className="cursor-pointer">
+                  <input type="checkbox" className="form-checkbox" aria-label="Tout sélectionner" />
                 </label>
               </th>
-              <th>Order ID</th>
-              <th>Name and country</th>
-              <th>Status</th>
-              <th>Subtotal</th>
-              <th>Date</th>
-              <th></th>
+              <th scope="col">N° commande</th>
+              <th scope="col">Client et pays</th>
+              <th scope="col">Statut</th>
+              <th scope="col">Sous-total</th>
+              <th scope="col">Date</th>
+              <th scope="col">
+                <span className="sr-only">Actions</span>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {/* row 1 */}
-            {orders && orders.length > 0 &&
+            {orders && orders.length > 0 ? (
               orders.map((order) => (
-                <tr key={order?.id}>
-                  <th>
-                    <label>
-                      <input type="checkbox" className="checkbox" />
+                <tr key={order.id}>
+                  <td>
+                    <label className="cursor-pointer">
+                      <input type="checkbox" className="form-checkbox" aria-label={`Sélectionner la commande ${order.id}`} />
                     </label>
-                  </th>
-
+                  </td>
+                  <td>
+                    <span className="font-semibold">#{order.id.slice(0, 8)}</span>
+                  </td>
                   <td>
                     <div>
-                      <p className="font-bold">#{order?.id}</p>
+                      <span className="font-medium text-brand-text-primary">{order.name}</span>
+                      <div className="text-sm text-brand-text-secondary">{order.country ?? "—"}</div>
                     </div>
                   </td>
-
                   <td>
-                    <div className="flex items-center gap-5">
-                      <div>
-                        <div className="font-bold">{order?.name}</div>
-                        <div className="text-sm opacity-50">{order?.country ?? "-"}</div>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td>
-                    <span className="badge badge-success text-white badge-sm">
-                      {order?.status}
+                    <span className="badge badge-success">
+                      {statusLabels[order.status] ?? order.status}
                     </span>
                   </td>
-
+                  <td>{order.total} MRU</td>
+                  <td>{new Date(Date.parse(order.dateTime)).toLocaleDateString("fr-FR")}</td>
                   <td>
-                    <p>${order?.total}</p>
-                  </td>
-
-                  <td>{ new Date(Date.parse(order?.dateTime)).toDateString() }</td>
-                  <th>
-                    <Link
-                      href={`/admin/orders/${order?.id}`}
-                      className="btn btn-ghost btn-xs"
-                    >
-                      details
+                    <Link href={`/admin/orders/${order.id}`} className="btn btn-ghost btn-sm">
+                      Détails
                     </Link>
-                  </th>
+                  </td>
                 </tr>
-              ))}
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7} className="text-center py-8 text-brand-text-secondary">
+                  Aucune commande pour le moment.
+                </td>
+              </tr>
+            )}
           </tbody>
-          {/* foot */}
           <tfoot>
             <tr>
-              <th></th>
-              <th>Order ID</th>
-              <th>Name and country</th>
-              <th>Status</th>
-              <th>Subtotal</th>
-              <th>Date</th>
-              <th></th>
+              <th scope="col"></th>
+              <th scope="col">N° commande</th>
+              <th scope="col">Client et pays</th>
+              <th scope="col">Statut</th>
+              <th scope="col">Sous-total</th>
+              <th scope="col">Date</th>
+              <th scope="col"></th>
             </tr>
           </tfoot>
         </table>
       </div>
-    </div>
+    </section>
   );
 };
 

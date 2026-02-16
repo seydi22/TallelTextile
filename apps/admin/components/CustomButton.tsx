@@ -1,38 +1,42 @@
-// *********************
-// Role of the component: Custom button component
-// Name of the component: CustomButton.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <CustomButton paddingX={paddingX} paddingY={paddingY} text={text} buttonType={buttonType} customWidth={customWidth} textSize={textSize} />
-// Input parameters: CustomButtonProps interface
-// Output: custom button component
-// *********************
+"use client";
 
 import React from "react";
 
-interface CustomButtonProps {
-  paddingX: number;
-  paddingY: number;
+export interface CustomButtonProps {
+  paddingX?: number;
+  paddingY?: number;
   text: string;
   buttonType: "submit" | "reset" | "button";
-  customWidth: string;
-  textSize: string;
+  customWidth?: string;
+  textSize?: string;
+  variant?: "primary" | "secondary" | "outline" | "ghost";
+  className?: string;
 }
 
 const CustomButton = ({
-  paddingX,
-  paddingY,
+  paddingX = 6,
+  paddingY = 3,
   text,
   buttonType,
   customWidth,
-  textSize
+  textSize = "base",
+  variant = "secondary",
+  className = "",
 }: CustomButtonProps) => {
-
+  const widthClass = customWidth && customWidth !== "no" ? `min-w-[${customWidth}]` : "";
+  const variantClass = {
+    primary: "btn-primary",
+    secondary: "btn-secondary",
+    outline: "btn-outline",
+    ghost: "btn-ghost",
+  }[variant];
+  const sizeClass = textSize === "sm" ? "btn-sm" : textSize === "lg" ? "btn-lg" : "btn-md";
 
   return (
     <button
-      type={`${buttonType}`}
-      className={`${customWidth !== "no" && `w-${customWidth}`} uppercase bg-white px-${paddingX} py-${paddingY} text-${textSize} border border-black border-gray-300 font-bold text-blue-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2`}
+      type={buttonType}
+      className={`btn ${variantClass} ${sizeClass} ${widthClass} ${className}`.trim()}
+      style={customWidth && customWidth !== "no" ? { minWidth: customWidth } : undefined}
     >
       {text}
     </button>

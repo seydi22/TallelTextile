@@ -1,12 +1,15 @@
 "use client";
-import { AdminOrders, DashboardSidebar } from '../../../../components';
+
+import { AdminOrders, DashboardSidebar } from "../../../../components";
 import React from "react";
 
 const DashboardOrdersPage = () => {
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto h-full max-xl:flex-col max-xl:h-fit">
+    <div className="dashboard-layout bg-brand-bg-primary">
       <DashboardSidebar />
-      <AdminOrders />
+      <main className="dashboard-content">
+        <AdminOrders />
+      </main>
     </div>
   );
 };

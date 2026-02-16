@@ -32,14 +32,14 @@ const DashboardSingleCategory = ({ params }: DashboardSingleCategoryProps) => {
       .delete(`/api/categories/${id}`, requestOptions)
       .then((response) => {
         if (response.status === 204) {
-          toast.success("Category deleted successfully");
+          toast.success("Catégorie supprimée avec succès");
           router.push("/admin/categories");
         } else {
-          throw Error("There was an error deleting a category");
+          throw Error("Erreur lors de la suppression de la catégorie");
         }
       })
-      .catch((error) => {
-        toast.error("There was an error deleting category");
+      .catch(() => {
+        toast.error("Erreur lors de la suppression de la catégorie");
       });
   };
 
@@ -145,10 +145,10 @@ const DashboardSingleCategory = ({ params }: DashboardSingleCategoryProps) => {
   }, [id]);
 
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto xl:h-full max-xl:flex-col max-xl:gap-y-5">
+    <div className="dashboard-layout bg-brand-bg-primary">
       <DashboardSidebar />
-      <div className="flex flex-col gap-y-7 xl:pl-5 max-xl:px-5 w-full">
-        <h1 className="text-3xl font-semibold">Category details</h1>
+      <main className="dashboard-content flex flex-col gap-6">
+        <h1 className="page-title">Détails de la catégorie</h1>
         <div>
           <label className="form-control w-full max-w-xs">
             <div className="label">
@@ -198,24 +198,23 @@ const DashboardSingleCategory = ({ params }: DashboardSingleCategoryProps) => {
         <div className="flex gap-x-2 max-sm:flex-col">
           <button
             type="button"
-            className="uppercase bg-brand-secondary px-10 py-5 text-lg border border-brand-primary font-bold text-white shadow-sm hover:bg-brand-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors duration-300"
+            className="btn btn-secondary btn-lg"
             onClick={updateCategory}
           >
-            Update category
+            Mettre à jour la catégorie
           </button>
           <button
             type="button"
-            className="uppercase bg-red-600 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-red-700 hover:text-white focus:outline-none focus:ring-2"
+            className="btn btn-danger btn-lg"
             onClick={deleteCategory}
           >
-            Delete category
+            Supprimer la catégorie
           </button>
         </div>
-        <p className="text-xl text-error max-sm:text-lg">
-          Note: if you delete this category, you will delete all products
-          associated with the category.
+        <p className="text-brand-text-secondary text-base sm:text-lg mt-2" role="note">
+          En supprimant cette catégorie, vous supprimerez aussi tous les produits qui y sont associés.
         </p>
-      </div>
+      </main>
     </div>
   );
 };

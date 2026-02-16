@@ -1,6 +1,7 @@
 "use client";
-import { CustomButton, DashboardSidebar } from '../../../../components';
-import apiClient from '@tallel-textile/shared/lib/api';
+
+import { CustomButton, DashboardSidebar } from "../../../../components";
+import apiClient from "@tallel-textile/shared/lib/api";
 import { nanoid } from "nanoid";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -11,94 +12,89 @@ interface User {
   role: string | null;
 }
 
+const roleLabels: Record<string, string> = {
+  admin: "Administrateur",
+  user: "Utilisateur",
+};
+
 const DashboardUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    // sending API request for all users
-    apiClient.get("/api/users")
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        setUsers(data);
-      });
+    apiClient
+      .get("/api/users")
+      .then((res) => res.json())
+      .then((data) => setUsers(Array.isArray(data) ? data : []));
   }, []);
 
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto h-full max-xl:flex-col max-xl:h-fit max-xl:gap-y-4">
+    <div className="dashboard-layout bg-brand-bg-primary">
       <DashboardSidebar />
-      <div className="w-full">
-        <h1 className="text-3xl font-semibold text-center mb-5">All users</h1>
-        <div className="flex justify-end mb-5">
+      <main className="dashboard-content">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+          <h1 className="page-title mb-0 text-center sm:text-left">Tous les utilisateurs</h1>
           <Link href="/admin/users/new">
-            <CustomButton
-              buttonType="button"
-              customWidth="110px"
-              paddingX={10}
-              paddingY={5}
-              textSize="base"
-              text="Add new user"
-            />
+            <CustomButton buttonType="button" text="Ajouter un utilisateur" variant="secondary" className="btn-md" />
           </Link>
         </div>
-        <div className="xl:ml-5 w-full max-xl:mt-5 overflow-auto w-full h-[80vh]">
-          <table className="table table-md table-pin-cols">
-            {/* head */}
+        <div className="table-wrapper overflow-x-auto max-h-[80vh]">
+          <table className="table-admin" role="grid">
             <thead>
               <tr>
-                <th>
-                  <label>
-                    <input type="checkbox" className="checkbox" />
+                <th scope="col">
+                  <span className="sr-only">Sélection</span>
+                  <label className="cursor-pointer">
+                    <input type="checkbox" className="form-checkbox" aria-label="Tout sélectionner" />
                   </label>
                 </th>
-                <th>Email</th>
-                <th>Role</th>
-                <th></th>
+                <th scope="col">E-mail</th>
+                <th scope="col">Rôle</th>
+                <th scope="col">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {/* row 1 */}
-              {users &&
+              {users.length > 0 ? (
                 users.map((user) => (
-                  <tr key={nanoid()}>
-                    <th>
-                      <label>
-                        <input type="checkbox" className="checkbox" />
+                  <tr key={user.id}>
+                    <td>
+                      <label className="cursor-pointer">
+                        <input type="checkbox" className="form-checkbox" aria-label={`Sélectionner ${user.email}`} />
                       </label>
-                    </th>
-
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <p>{user?.email}</p>
-                      </div>
                     </td>
                     <td>
-                      <p>{user?.role}</p>
+                      <p className="font-medium text-brand-text-primary">{user.email}</p>
                     </td>
-                    <th>
-                      <Link
-                        href={`/admin/users/${user?.id}`}
-                        className="btn btn-ghost btn-xs"
-                      >
-                        details
+                    <td>
+                      <span className="badge badge-primary">{roleLabels[user?.role ?? ""] ?? user?.role ?? "—"}</span>
+                    </td>
+                    <td>
+                      <Link href={`/admin/users/${user.id}`} className="btn btn-ghost btn-sm">
+                        Détails
                       </Link>
-                    </th>
+                    </td>
                   </tr>
-                ))}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="text-center py-8 text-brand-text-secondary">
+                    Aucun utilisateur.
+                  </td>
+                </tr>
+              )}
             </tbody>
-            {/* foot */}
             <tfoot>
               <tr>
-                <th></th>
-                <th>Email</th>
-                <th>Role</th>
-                <th></th>
+                <th scope="col"></th>
+                <th scope="col">E-mail</th>
+                <th scope="col">Rôle</th>
+                <th scope="col"></th>
               </tr>
             </tfoot>
           </table>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

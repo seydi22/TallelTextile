@@ -19,17 +19,17 @@ const DashboardCreateNewUser = () => {
 
   const addNewUser = async () => {
     if (userInput.email === "" || userInput.password === "") {
-      toast.error("You must enter all input values to add a user");
+      toast.error("Veuillez remplir tous les champs pour ajouter un utilisateur");
       return;
     }
 
     if (!isValidEmailAddressFormat(userInput.email)) {
-      toast.error("You entered invalid email address format");
+      toast.error("Format d'adresse e-mail invalide");
       return;
     }
 
     if (userInput.password.length <= 7) {
-      toast.error("Password must be longer than 7 characters");
+      toast.error("Le mot de passe doit contenir au moins 8 caractères");
       return;
     }
 
@@ -40,7 +40,7 @@ const DashboardCreateNewUser = () => {
       const response = await apiClient.post(`/api/users`, sanitizedUserInput);
 
       if (response.status === 201) {
-        toast.success("User added successfully");
+        toast.success("Utilisateur ajouté avec succès");
         setUserInput({
           email: "",
           password: "",
@@ -48,79 +48,70 @@ const DashboardCreateNewUser = () => {
         });
       } else {
         const errorData = await response.json();
-        toast.error(errorData.error || "Error while creating user");
+        toast.error(errorData.error || "Erreur lors de la création de l'utilisateur");
       }
     } catch (error) {
-      toast.error("An unexpected error occurred.");
+      toast.error("Une erreur inattendue s'est produite.");
       console.error("Error creating user:", error);
     }
   };
 
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto xl:h-full max-xl:flex-col max-xl:gap-y-5">
+    <div className="dashboard-layout bg-brand-bg-primary">
       <DashboardSidebar />
-      <div className="flex flex-col gap-y-7 xl:pl-5 max-xl:px-5 w-full">
-        <h1 className="text-3xl font-semibold">Add new user</h1>
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Email:</span>
-            </div>
+      <main className="dashboard-content flex flex-col gap-6">
+        <h1 className="page-title">Ajouter un utilisateur</h1>
+        <div className="form-group">
+          <label htmlFor="user-email" className="form-label">E-mail</label>
             <input
+              id="user-email"
               type="email"
-              className="input input-bordered w-full max-w-xs"
+              className="form-input max-w-xs"
               value={userInput.email}
               onChange={(e) =>
                 setUserInput({ ...userInput, email: e.target.value })
               }
             />
-          </label>
         </div>
 
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Password:</span>
-            </div>
-            <input
-              type="password"
-              className="input input-bordered w-full max-w-xs"
-              value={userInput.password}
-              onChange={(e) =>
-                setUserInput({ ...userInput, password: e.target.value })
-              }
-            />
-          </label>
+        <div className="form-group">
+          <label htmlFor="user-password" className="form-label">Mot de passe</label>
+          <input
+            id="user-password"
+            type="password"
+            className="form-input max-w-xs"
+            value={userInput.password}
+            onChange={(e) =>
+              setUserInput({ ...userInput, password: e.target.value })
+            }
+          />
         </div>
 
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">User role: </span>
-            </div>
-            <select
-              className="select select-bordered"
-              defaultValue={userInput.role}
-              onChange={(e) =>
-                setUserInput({ ...userInput, role: e.target.value })
-              }
-            >
-              <option value="admin">admin</option>
-              <option value="user">user</option>
-            </select>
-          </label>
+        <div className="form-group">
+          <label htmlFor="user-role" className="form-label">Rôle</label>
+          <select
+            id="user-role"
+            className="form-select max-w-xs"
+            defaultValue={userInput.role}
+            onChange={(e) =>
+              setUserInput({ ...userInput, role: e.target.value })
+            }
+          >
+            <option value="admin">Administrateur</option>
+            <option value="user">Utilisateur</option>
+          </select>
         </div>
 
-        <div className="flex gap-x-2">
+        <div className="flex gap-3">
           <button
             type="button"
-            className="uppercase bg-brand-secondary px-10 py-5 text-lg border border-brand-primary font-bold text-white shadow-sm hover:bg-brand-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors duration-300"
+            className="btn btn-secondary btn-md"
             onClick={addNewUser}
           >
-            Create user
+            Créer l&apos;utilisateur
           </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

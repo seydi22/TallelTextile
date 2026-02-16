@@ -61,18 +61,18 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
         if (response.status !== 204) {
           if (response.status === 400) {
             toast.error(
-              "Cannot delete the product because of foreign key constraint"
+              "Impossible de supprimer ce produit : il est référencé par des commandes."
             );
           } else {
             throw Error("There was an error while deleting product");
           }
         } else {
-          toast.success("Product deleted successfully");
+          toast.success("Produit supprimé avec succès");
           router.push("/admin/products");
         }
       })
       .catch((error) => {
-        toast.error("There was an error while deleting product");
+        toast.error("Erreur lors de la suppression du produit");
       });
   };
 
@@ -85,7 +85,7 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
       product?.manufacturer === "" ||
       product?.description === ""
     ) {
-      toast.error("You need to enter values in input fields");
+      toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
@@ -94,7 +94,7 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
 
       if (response.status === 200) {
         await response.json();
-        toast.success("Product successfully updated");
+        toast.success("Produit mis à jour avec succès");
         // Redirection vers la liste des produits après 1 seconde
         setTimeout(() => {
           router.push("/admin/products");
@@ -102,12 +102,12 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
       } else {
         const errorData = await response.json();
         toast.error(
-          errorData.error || "There was an error while updating product"
+          errorData.error || "Erreur lors de la mise à jour du produit"
         );
       }
     } catch (error) {
       console.error("Error updating product:", error);
-      toast.error("There was an error while updating product");
+      toast.error("Erreur lors de la mise à jour du produit");
     }
   };
 

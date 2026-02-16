@@ -1,22 +1,23 @@
-// *********************
-// Role of the component: Section title that can be used on any page
-// Name of the component: SectionTitle.tsx
-// Developer: Aleksandar Kuzmanovic (Updated for TALLEL TEXTILE)
-// Version: 2.0
-// Component call: <SectionTitle />
-// Input parameters: {title: string; path: string}
-// Output: div containing h1 for page title and p for page location path 
-// *********************
+"use client";
 
-import React from 'react'
+import React from "react";
 
-const SectionTitle = ({title, path} : {title: string; path: string}) => {
-  return (
-    <div className='h-[250px] border-b pt-16 border-brand-primary/20 bg-brand-secondary mb-2 max-sm:h-[200px] max-sm:pt-16'>
-        <h1 className='section-title-title text-7xl text-center mb-7 max-md:text-7xl max-sm:text-5xl text-white max-sm:mb-2 font-serif font-semibold'>{ title }</h1>
-        <p className='section-title-path text-xl text-center max-sm:text-xl text-brand-accent'>{ path }</p>
-    </div>
-  )
+interface SectionTitleProps {
+  title: string;
+  path: string;
 }
 
-export default SectionTitle
+const SectionTitle = ({ title, path }: SectionTitleProps) => {
+  return (
+    <header className="h-[200px] sm:h-[230px] md:h-[250px] border-b border-brand-primary/20 bg-brand-secondary flex flex-col justify-center items-center pt-12 pb-6 px-4">
+      <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-center text-white font-serif font-semibold mb-2 sm:mb-4">
+        {title}
+      </h1>
+      <p className="text-base sm:text-lg md:text-xl text-brand-accent text-center" aria-label="Fil d’Ariane">
+        {path}
+      </p>
+    </header>
+  );
+};
+
+export default SectionTitle;

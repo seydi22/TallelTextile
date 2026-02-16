@@ -1,9 +1,10 @@
 "use client";
+
 import React, { useState } from "react";
-import DashboardSidebar from '../../../../../components/DashboardSidebar';
+import DashboardSidebar from "../../../../../components/DashboardSidebar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import apiClient from '@tallel-textile/shared/lib/api';
+import apiClient from "@tallel-textile/shared/lib/api";
 import { toast } from "react-hot-toast";
 
 export default function NewMerchantPage() {
@@ -19,9 +20,7 @@ export default function NewMerchantPage() {
   const router = useRouter();
 
   const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -29,138 +28,132 @@ export default function NewMerchantPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.name.trim()) {
-      toast.error("Merchant name is required");
+      toast.error("Le nom du marchand est obligatoire");
       return;
     }
-    
     setIsSubmitting(true);
-    
     try {
       const response = await apiClient.post("/api/merchants", formData);
-
       if (!response.ok) {
-        let errorMessage = "Failed to create merchant";
+        let errorMessage = "Impossible de créer le marchand";
         try {
           const errorData = await response.json();
-          if (errorData && errorData.error) {
-            errorMessage = errorData.error;
-          }
-        } catch (parseError) {
-          console.error("Failed to parse error response:", parseError);
-        }
+          if (errorData?.error) errorMessage = errorData.error;
+        } catch {}
         throw new Error(errorMessage);
       }
-
       const data = await response.json();
-      toast.success("Merchant created successfully");
+      toast.success("Marchand créé avec succès");
       router.push(`/admin/merchant/${data.id}`);
     } catch (error) {
       console.error("Error creating merchant:", error);
-      toast.error("Failed to create merchant");
+      toast.error("Impossible de créer le marchand");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="dashboard-layout bg-brand-bg-primary">
       <DashboardSidebar />
-      <div className="flex-1 p-10 overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Add New Merchant</h1>
-          <Link
-            href="/admin/merchant"
-            className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition"
-          >
-            Cancel
+      <main className="dashboard-content">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <h1 className="page-title mb-0">Ajouter un marchand</h1>
+          <Link href="/admin/merchant" className="btn btn-ghost btn-md">
+            Annuler
           </Link>
         </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
-                placeholder="Merchant name"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
-                placeholder="email@example.com"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Phone</label>
-              <input
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
-                placeholder="Phone number"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
-              >
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Inactive</option>
-              </select>
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-gray-700 font-medium mb-2">Address</label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-brand-primary"
-                placeholder="Merchant address"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-gray-700 font-medium mb-2">Description</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring focus:border-blue-300 h-32"
-                placeholder="Enter merchant description"
-              ></textarea>
-            </div>
-            <div className="md:col-span-2">
-              <button 
-                type="submit" 
-                disabled={isSubmitting}
-                className={`bg-brand-secondary text-white px-6 py-2 rounded-md hover:bg-brand-primary transition-colors duration-300 ${
-                  isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-                }`}
-              >
-                {isSubmitting ? "Creating..." : "Create Merchant"}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+        <section className="card">
+          <div className="card-body">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="form-group">
+                <label htmlFor="merchant-name" className="form-label">Nom</label>
+                <input
+                  id="merchant-name"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  className="form-input"
+                  placeholder="Nom du marchand"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="merchant-email" className="form-label">E-mail</label>
+                <input
+                  id="merchant-email"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="email@exemple.com"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="merchant-phone" className="form-label">Téléphone</label>
+                <input
+                  id="merchant-phone"
+                  type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="Numéro de téléphone"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="merchant-status" className="form-label">Statut</label>
+                <select
+                  id="merchant-status"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleInputChange}
+                  className="form-select"
+                >
+                  <option value="ACTIVE">Actif</option>
+                  <option value="INACTIVE">Inactif</option>
+                </select>
+              </div>
+              <div className="md:col-span-2 form-group">
+                <label htmlFor="merchant-address" className="form-label">Adresse</label>
+                <input
+                  id="merchant-address"
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="Adresse du marchand"
+                />
+              </div>
+              <div className="md:col-span-2 form-group">
+                <label htmlFor="merchant-description" className="form-label">Description</label>
+                <textarea
+                  id="merchant-description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  className="form-textarea"
+                  placeholder="Description du marchand"
+                  rows={5}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn btn-secondary btn-md disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "Création…" : "Créer le marchand"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
