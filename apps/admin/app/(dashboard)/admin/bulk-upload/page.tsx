@@ -254,9 +254,9 @@ Autre produit,149.99,Autre fabricant,5,https://exemple.com/image2.jpg,Autre desc
                   <tr><td className="font-mono">price</td><td>Oui</td><td>Nombre</td><td>Prix (ex. 99.99)</td></tr>
                   <tr><td className="font-mono">manufacturer</td><td>Oui</td><td>Texte</td><td>Marque / fabricant</td></tr>
                   <tr><td className="font-mono">inStock</td><td>Non</td><td>Nombre</td><td>Quantité en stock (défaut : 0)</td></tr>
-                  <tr><td className="font-mono">mainImage</td><td>Non</td><td>URL</td><td>URL de l'image</td></tr>
+                  <tr><td className="font-mono">mainImage</td><td>Non</td><td>URL</td><td>URL de l&apos;image</td></tr>
                   <tr><td className="font-mono">description</td><td>Oui</td><td>Texte</td><td>Description du produit</td></tr>
-                  <tr><td className="font-mono">slug</td><td>Oui</td><td>Texte</td><td>Identifiant pour l'URL</td></tr>
+                  <tr><td className="font-mono">slug</td><td>Oui</td><td>Texte</td><td>Identifiant pour l&apos;URL</td></tr>
                   <tr><td className="font-mono">categoryId</td><td>Oui</td><td>UUID</td><td>ID de la catégorie (base de données)</td></tr>
                 </tbody>
               </table>

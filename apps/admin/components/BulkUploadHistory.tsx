@@ -145,7 +145,7 @@ const BulkUploadHistory = () => {
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center text-brand-text-secondary">
         <FaFileAlt className="text-4xl mx-auto mb-2 text-gray-400" aria-hidden />
-        <p>Aucun historique d'import pour le moment.</p>
+        <p>Aucun historique d&apos;import pour le moment.</p>
       </div>
     );
   }
@@ -165,7 +165,7 @@ const BulkUploadHistory = () => {
             <div className="flex items-center gap-3 mb-4">
               <FaExclamationTriangle className="text-yellow-500 text-3xl flex-shrink-0" aria-hidden />
               <h3 id="delete-batch-title" className="text-xl font-bold text-brand-text-primary">
-                Supprimer ce lot d'import
+                Supprimer ce lot d&apos;import
               </h3>
             </div>
             <p className="text-brand-text-secondary mb-4">
