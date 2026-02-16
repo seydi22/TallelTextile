@@ -268,17 +268,15 @@ const AddNewProduct = () => {
   }, []);
 
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto xl:h-full max-xl:flex-col max-xl:gap-y-5">
+    <div className="dashboard-layout bg-brand-bg-primary">
       <DashboardSidebar />
-      <div className="flex flex-col gap-y-7 xl:ml-5 max-xl:px-5 w-full">
-        <h1 className="text-3xl font-semibold">Add new product</h1>
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Merchant Info:</span>
-            </div>
+      <main className="dashboard-content flex flex-col gap-6">
+        <h1 className="page-title">Ajouter un produit</h1>
+        <div className="form-group">
+          <label htmlFor="product-merchant" className="form-label">Marchand</label>
             <select
-              className="select select-bordered"
+              id="product-merchant"
+              className="form-select max-w-xs"
               value={product?.merchantId}
               onChange={(e) =>
                 setProduct({ ...product, merchantId: e.target.value })
@@ -292,36 +290,30 @@ const AddNewProduct = () => {
             </select>
             {merchants.length === 0 && (
               <span className="text-xs text-red-500 mt-1">
-                Please create a merchant first.
+                Veuillez d&apos;abord créer un marchand.
               </span>
             )}
-          </label>
         </div>
 
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Product name:</span>
-            </div>
+        <div className="form-group">
+          <label htmlFor="product-name" className="form-label">Nom du produit</label>
             <input
+              id="product-name"
               type="text"
-              className="input input-bordered w-full max-w-xs"
+              className="form-input max-w-xs"
               value={product?.title}
               onChange={(e) =>
                 setProduct({ ...product, title: e.target.value })
               }
             />
-          </label>
         </div>
 
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Product slug:</span>
-            </div>
+        <div className="form-group">
+          <label htmlFor="product-slug" className="form-label">Slug du produit (identifiant URL)</label>
             <input
+              id="product-slug"
               type="text"
-              className="input input-bordered w-full max-w-xs"
+              className="form-input max-w-xs"
               value={convertSlugToURLFriendly(product?.slug)}
               onChange={(e) =>
                 setProduct({
@@ -330,16 +322,13 @@ const AddNewProduct = () => {
                 })
               }
             />
-          </label>
         </div>
 
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Category:</span>
-            </div>
+        <div className="form-group">
+          <label htmlFor="product-category" className="form-label">Catégorie</label>
             <select
-              className="select select-bordered"
+              id="product-category"
+              className="form-select max-w-xs"
               value={product?.categoryId}
               onChange={(e) =>
                 setProduct({ ...product, categoryId: e.target.value })
@@ -361,58 +350,50 @@ const AddNewProduct = () => {
                 Aucune catégorie disponible. Veuillez créer une catégorie d&apos;abord.
               </span>
             )}
-          </label>
         </div>
 
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Product price:</span>
-            </div>
+        <div className="form-group">
+          <label htmlFor="product-price" className="form-label">Prix du produit</label>
             <input
+              id="product-price"
               type="text"
-              className="input input-bordered w-full max-w-xs"
+              className="form-input max-w-xs"
               value={product?.price}
               onChange={(e) =>
                 setProduct({ ...product, price: Number(e.target.value) })
               }
             />
-          </label>
         </div>
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Manufacturer:</span>
-            </div>
+        <div className="form-group">
+          <label htmlFor="product-manufacturer" className="form-label">Fabricant</label>
             <input
+              id="product-manufacturer"
               type="text"
-              className="input input-bordered w-full max-w-xs"
+              className="form-input max-w-xs"
               value={product?.manufacturer}
               onChange={(e) =>
                 setProduct({ ...product, manufacturer: e.target.value })
               }
             />
-          </label>
         </div>
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Is product in stock?</span>
-            </div>
+        <div className="form-group">
+          <label htmlFor="product-stock" className="form-label">Produit en stock ?</label>
             <select
-              className="select select-bordered"
+              id="product-stock"
+              className="form-select max-w-xs"
               value={product?.inStock}
               onChange={(e) =>
                 setProduct({ ...product, inStock: Number(e.target.value) })
               }
             >
-              <option value={1}>Yes</option>
-              <option value={0}>No</option>
+              <option value={1}>Oui</option>
+              <option value={0}>Non</option>
             </select>
-          </label>
         </div>
-        <div>
+        <div className="form-group">
+          <label htmlFor="product-image" className="form-label">Image principale</label>
           <input
+            id="product-image"
             type="file"
             className="file-input file-input-bordered file-input-lg w-full max-w-sm"
             onChange={(e: any) => {
@@ -431,30 +412,27 @@ const AddNewProduct = () => {
             />
           )}
         </div>
-        <div>
-          <label className="form-control">
-            <div className="label">
-              <span className="label-text">Product description:</span>
-            </div>
+        <div className="form-group">
+          <label htmlFor="product-description" className="form-label">Description du produit</label>
             <textarea
-              className="textarea textarea-bordered h-24"
+              id="product-description"
+              className="form-textarea max-w-xl h-24"
               value={product?.description}
               onChange={(e) =>
                 setProduct({ ...product, description: e.target.value })
               }
-            ></textarea>
-          </label>
+            />
         </div>
         <div className="flex gap-x-2">
           <button
             onClick={addProduct}
             type="button"
-            className="uppercase bg-brand-secondary px-10 py-5 text-lg border border-brand-primary font-bold text-white shadow-sm hover:bg-brand-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors duration-300"
+            className="btn btn-secondary btn-lg"
           >
-            Add product
+            Ajouter le produit
           </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
