@@ -547,30 +547,30 @@ const CheckoutPage = () => {
                 Indiquez vos mesures pour une confection sur mesure. Tous les champs sont optionnels.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {MEASUREMENT_FIELDS.map(({ key, label, optional }) => (
-                  <div key={key} className="space-y-1">
+                {MEASUREMENT_FIELDS.map((field) => (
+                  <div key={field.key} className="space-y-1">
                     <label
-                      htmlFor={`measure-${key}`}
+                      htmlFor={`measure-${field.key}`}
                       className="block text-sm font-medium text-brand-text-primary"
                     >
-                      {label}
-                      {optional && (
+                      {field.label}
+                      {"optional" in field && field.optional && (
                         <span className="ml-1 text-brand-text-secondary font-normal">(optionnel)</span>
                       )}
                     </label>
-                    {key === "longueurBoubou" && (
+                    {field.key === "longueurBoubou" && (
                       <p className="text-xs text-brand-primary/90 mb-1">
                         Ce champ n&apos;est applicable que si vous commandez un boubou.
                       </p>
                     )}
                     <input
-                      id={`measure-${key}`}
+                      id={`measure-${field.key}`}
                       type="text"
                       inputMode="decimal"
                       placeholder="0"
-                      value={measurements[key] ?? ""}
+                      value={measurements[field.key] ?? ""}
                       onChange={(e) =>
-                        setMeasurements((prev) => ({ ...prev, [key]: e.target.value }))
+                        setMeasurements((prev) => ({ ...prev, [field.key]: e.target.value }))
                       }
                       disabled={isSubmitting}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
