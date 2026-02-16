@@ -75,24 +75,40 @@ async function createCustomerOrder(request, response) {
     console.log("Creating order in database...");
     // Compatible ancien client Prisma déployé : champs string en '', pas de desiredDeliveryDate (absent dans l'ancien schéma)
     const str = (v) => (v != null && String(v).trim() !== '' ? String(v).trim() : '');
-    const corder = await prisma.customer_order.create({
-      data: {
-        name: validatedData.name,
-        lastname: validatedData.lastname,
-        phone: validatedData.phone,
-        email: validatedData.email ?? null,
-        company: str(validatedData.company),
-        adress: str(validatedData.adress),
-        apartment: str(validatedData.apartment),
-        postalCode: str(validatedData.postalCode),
-        status: validatedData.status,
-        city: str(validatedData.city),
-        country: str(validatedData.country),
-        orderNotice: validatedData.orderNotice ?? '',
-        total: totalAsInt,
-        dateTime: new Date()
-      },
-    });
+    let orderNotice = validatedData.orderNotice ?? '';
+    const baseData = {
+      name: validatedData.name,
+      lastname: validatedData.lastname,
+      phone: validatedData.phone,
+      email: validatedData.email ?? null,
+      company: str(validatedData.company),
+      adress: str(validatedData.adress),
+      apartment: str(validatedData.apartment),
+      postalCode: str(validatedData.postalCode),
+      status: validatedData.status,
+      city: str(validatedData.city),
+      country: str(validatedData.country),
+      orderNotice,
+      total: totalAsInt,
+      dateTime: new Date()
+    };
+    if (validatedData.measurements && Object.keys(validatedData.measurements).length > 0) {
+      baseData.measurements = validatedData.measurements;
+    }
+    let corder;
+    try {
+      corder = await prisma.customer_order.create({ data: baseData });
+    } catch (createErr) {
+      if (createErr.message && createErr.message.includes('Unknown argument') && createErr.message.includes('measurements')) {
+        delete baseData.measurements;
+        if (validatedData.measurements && Object.keys(validatedData.measurements).length > 0) {
+          baseData.orderNotice = [orderNotice, 'MESURES: ' + JSON.stringify(validatedData.measurements)].filter(Boolean).join('\n');
+        }
+        corder = await prisma.customer_order.create({ data: baseData });
+      } else {
+        throw createErr;
+      }
+    }
 
     console.log("✅ Order created successfully:", corder);
     console.log("Order ID:", corder.id);

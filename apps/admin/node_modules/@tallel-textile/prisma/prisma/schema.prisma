@@ -68,6 +68,7 @@ model Customer_order {
   desiredDeliveryDate DateTime?
   orderNotice        String?
   total              Int
+  measurements       Json?
   products           customer_order_product[]
 }
 

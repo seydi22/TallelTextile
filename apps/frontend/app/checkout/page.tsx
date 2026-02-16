@@ -11,6 +11,25 @@ import apiClient from '@tallel-textile/shared/lib/api';
 import { formatPriceMRU } from '@tallel-textile/shared/lib/formatPrice';
 import { getImageUrl } from "@/utils/imageUtils";
 
+const MEASUREMENT_FIELDS = [
+  { key: "epaule", label: "Épaule (cm)" },
+  { key: "manche", label: "Manche (cm)" },
+  { key: "cou", label: "Cou (cm)" },
+  { key: "poitrine", label: "Poitrine (cm)" },
+  { key: "ceinture", label: "Ceinture (cm)" },
+  { key: "fesse", label: "Fesse (cm)" },
+  { key: "cuisse", label: "Cuisse (cm)" },
+  { key: "longueurPantalon", label: "Longueur pantalon (cm)" },
+  { key: "longueurDemiSaison", label: "Longueur demi-saison (cm)" },
+  { key: "longueurBoubou", label: "Longueur boubou (cm)", optional: true },
+  { key: "poignet", label: "Poignet (cm)" },
+  { key: "tourDeBras", label: "Tour de bras (cm)" },
+] as const;
+
+const initialMeasurements = Object.fromEntries(
+  MEASUREMENT_FIELDS.map((f) => [f.key, ""])
+) as Record<string, string>;
+
 const CheckoutPage = () => {
   
   const [checkoutForm, setCheckoutForm] = useState({
@@ -22,6 +41,8 @@ const CheckoutPage = () => {
     desiredDeliveryDate: "",
     orderNotice: "",
   });
+
+  const [measurements, setMeasurements] = useState<Record<string, string>>(initialMeasurements);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { products, total, clearCart } = useProductStore();
@@ -98,6 +119,13 @@ const CheckoutPage = () => {
       // Get user ID if logged in
       let userId = null;
       
+      // Mesures : ne garder que les valeurs renseignées (nombres en cm)
+      const measurementsPayload: Record<string, number> = {};
+      MEASUREMENT_FIELDS.forEach(({ key }) => {
+        const v = measurements[key]?.trim();
+        if (v !== "" && !isNaN(Number(v))) measurementsPayload[key] = Number(v);
+      });
+
       // Prepare the order data
       const orderData = {
         name: checkoutForm.name.trim(),
@@ -109,7 +137,8 @@ const CheckoutPage = () => {
         status: "pending",
         total: total,
         orderNotice: checkoutForm.orderNotice.trim(),
-        userId: userId // Add user ID for notifications
+        userId: userId,
+        measurements: Object.keys(measurementsPayload).length > 0 ? measurementsPayload : undefined,
       };
 
       console.log("📋 Order data being sent:", orderData);
@@ -503,6 +532,51 @@ const CheckoutPage = () => {
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
                   />
                 </div>
+              </div>
+            </section>
+
+            {/* Mesures client (cm) */}
+            <section aria-labelledby="measurements-heading" className="mt-10">
+              <h2
+                id="measurements-heading"
+                className="text-2xl font-serif font-semibold text-brand-text-primary mb-2"
+              >
+                Mesures (en cm)
+              </h2>
+              <p className="text-sm text-brand-text-secondary mb-4">
+                Indiquez vos mesures pour une confection sur mesure. Tous les champs sont optionnels.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {MEASUREMENT_FIELDS.map(({ key, label, optional }) => (
+                  <div key={key} className="space-y-1">
+                    <label
+                      htmlFor={`measure-${key}`}
+                      className="block text-sm font-medium text-brand-text-primary"
+                    >
+                      {label}
+                      {optional && (
+                        <span className="ml-1 text-brand-text-secondary font-normal">(optionnel)</span>
+                      )}
+                    </label>
+                    {key === "longueurBoubou" && (
+                      <p className="text-xs text-brand-primary/90 mb-1">
+                        Ce champ n&apos;est applicable que si vous commandez un boubou.
+                      </p>
+                    )}
+                    <input
+                      id={`measure-${key}`}
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
+                      value={measurements[key] ?? ""}
+                      onChange={(e) =>
+                        setMeasurements((prev) => ({ ...prev, [key]: e.target.value }))
+                      }
+                      disabled={isSubmitting}
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed text-brand-text-primary"
+                    />
+                  </div>
+                ))}
               </div>
             </section>
 

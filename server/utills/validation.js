@@ -412,6 +412,19 @@ const validateOrderData = (orderData) => {
   validatedData.orderNotice = orderData.orderNotice ? 
     orderData.orderNotice.trim().substring(0, 500) : ''; // Limit to 500 characters
 
+  // Mesures optionnelles : objet { [clé]: number } (valeurs en cm, 0-500)
+  const allowedMeasureKeys = ['epaule', 'manche', 'cou', 'poitrine', 'ceinture', 'fesse', 'cuisse', 'longueurPantalon', 'longueurDemiSaison', 'longueurBoubou', 'poignet', 'tourDeBras'];
+  validatedData.measurements = null;
+  if (orderData.measurements && typeof orderData.measurements === 'object' && !Array.isArray(orderData.measurements)) {
+    const out = {};
+    for (const key of allowedMeasureKeys) {
+      if (orderData.measurements[key] == null) continue;
+      const n = Number(orderData.measurements[key]);
+      if (!Number.isNaN(n) && n >= 0 && n <= 500) out[key] = Math.round(n * 10) / 10;
+    }
+    if (Object.keys(out).length > 0) validatedData.measurements = out;
+  }
+
   return {
     isValid: errors.length === 0,
     errors,
