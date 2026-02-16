@@ -90,7 +90,7 @@ const AdminSingleOrder = () => {
           try {
             measurements = JSON.parse(match[1]);
           } catch {}
-          orderNoticeClean = data.orderNotice.replace(/\n?MESURES:.*/s, "").trim();
+          orderNoticeClean = data.orderNotice.replace(/\n?MESURES:[\s\S]*/, "").trim();
         }
       }
       setOrder({
