@@ -245,26 +245,26 @@ async function updateCustomerOrder(request, response) {
       });
     }
 
+    const updateData = {
+      name: validatedData.name,
+      lastname: validatedData.lastname,
+      phone: validatedData.phone,
+      email: validatedData.email ?? null,
+      company: validatedData.company ?? null,
+      adress: validatedData.adress ?? null,
+      apartment: validatedData.apartment ?? null,
+      postalCode: validatedData.postalCode ?? null,
+      status: validatedData.status,
+      city: validatedData.city ?? null,
+      country: validatedData.country ?? null,
+      desiredDeliveryDate: validatedData.desiredDeliveryDate ?? null,
+      orderNotice: validatedData.orderNotice,
+      total: Math.round(Number(validatedData.total)),
+    };
+    if (validatedData.measurements != null) updateData.measurements = validatedData.measurements;
     const updatedOrder = await prisma.customer_order.update({
-      where: {
-        id: existingOrder.id,
-      },
-      data: {
-        name: validatedData.name,
-        lastname: validatedData.lastname,
-        phone: validatedData.phone,
-        email: validatedData.email ?? null,
-        company: validatedData.company ?? null,
-        adress: validatedData.adress ?? null,
-        apartment: validatedData.apartment ?? null,
-        postalCode: validatedData.postalCode ?? null,
-        status: validatedData.status,
-        city: validatedData.city ?? null,
-        country: validatedData.country ?? null,
-        desiredDeliveryDate: validatedData.desiredDeliveryDate ?? null,
-        orderNotice: validatedData.orderNotice,
-        total: validatedData.total,
-      },
+      where: { id: existingOrder.id },
+      data: updateData,
     });
 
     // Create notification for status update if status changed

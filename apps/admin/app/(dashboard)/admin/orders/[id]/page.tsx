@@ -29,43 +29,49 @@ interface OrderProduct {
   };
 }
 
+const MEASURE_LABELS: Record<string, string> = {
+  epaule: "Épaule (cm)",
+  manche: "Manche (cm)",
+  cou: "Cou (cm)",
+  poitrine: "Poitrine (cm)",
+  ceinture: "Ceinture (cm)",
+  fesse: "Fesse (cm)",
+  cuisse: "Cuisse (cm)",
+  longueurPantalon: "Longueur pantalon (cm)",
+  longueurDemiSaison: "Longueur demi-saison (cm)",
+  longueurBoubou: "Longueur boubou (cm)",
+  poignet: "Poignet (cm)",
+  tourDeBras: "Tour de bras (cm)",
+};
+
 interface Order {
   id: string;
-  adress?: string;
-  apartment?: string;
-  company?: string;
   dateTime: string;
   email?: string;
   lastname: string;
   name: string;
   phone: string;
-  postalCode?: string;
-  city?: string;
   country?: string;
   desiredDeliveryDate?: string | null;
   orderNotice?: string;
-  status: "processing" | "delivered" | "canceled" | "pending" | "shipped" | "cancelled";
+  status: "processing" | "delivered" | "cancelled" | "pending" | "shipped";
   total: number;
+  measurements?: Record<string, number> | null;
 }
 
 const AdminSingleOrder = () => {
   const [orderProducts, setOrderProducts] = useState<OrderProduct[]>();
   const [order, setOrder] = useState<Order>({
     id: "",
-    adress: "",
-    apartment: "",
-    company: "",
     dateTime: "",
     email: "",
     lastname: "",
     name: "",
     phone: "",
-    postalCode: "",
-    city: "",
     country: "",
     desiredDeliveryDate: null,
     orderNotice: "",
-    status: "processing",
+    status: "pending",
     total: 0,
   });
   const params = useParams<{ id: string }>();
@@ -74,17 +80,28 @@ const AdminSingleOrder = () => {
 
   useEffect(() => {
     const fetchOrderData = async () => {
-      const response = await apiClient.get(
-        `/api/orders/${params?.id}`
-      );
-      const data: Order = await response.json();
-      setOrder(data);
+      const response = await apiClient.get(`/api/orders/${params?.id}`);
+      const data = await response.json();
+      let orderNoticeClean = data.orderNotice ?? "";
+      let measurements: Record<string, number> | null = data.measurements ?? null;
+      if (!measurements && typeof data.orderNotice === "string" && data.orderNotice.includes("MESURES:")) {
+        const match = data.orderNotice.match(/MESURES:\s*(\{[\s\S]*?\})/);
+        if (match) {
+          try {
+            measurements = JSON.parse(match[1]);
+          } catch {}
+          orderNoticeClean = data.orderNotice.replace(/\n?MESURES:.*/s, "").trim();
+        }
+      }
+      setOrder({
+        ...data,
+        orderNotice: orderNoticeClean,
+        measurements: measurements ?? undefined,
+      });
     };
 
     const fetchOrderProducts = async () => {
-      const response = await apiClient.get(
-        `/api/order-product/${params?.id}`
-      );
+      const response = await apiClient.get(`/api/order-product/${params?.id}`);
       const data: OrderProduct[] = await response.json();
       setOrderProducts(data);
     };
@@ -94,59 +111,61 @@ const AdminSingleOrder = () => {
   }, [params?.id]);
 
   const updateOrder = async () => {
-    if (
-      order?.name?.trim().length > 0 &&
-      order?.lastname?.trim().length > 0 &&
-      order?.phone?.trim().length > 0
-    ) {
-      if (!isValidNameOrLastname(order?.name)) {
-        toast.error("Format du prénom invalide");
-        return;
+    if (!order?.name?.trim() || !order?.lastname?.trim() || !order?.phone?.trim()) {
+      toast.error("Veuillez remplir le prénom, le nom et le téléphone");
+      return;
+    }
+    if (!isValidNameOrLastname(order.name)) {
+      toast.error("Format du prénom invalide");
+      return;
+    }
+    if (!isValidNameOrLastname(order.lastname)) {
+      toast.error("Format du nom invalide");
+      return;
+    }
+    if (order.email?.trim() && !isValidEmailAddressFormat(order.email)) {
+      toast.error("Format de l'e-mail invalide");
+      return;
+    }
+    try {
+      const payload = {
+        name: order.name.trim(),
+        lastname: order.lastname.trim(),
+        phone: order.phone.trim(),
+        email: order.email?.trim() || null,
+        country: order.country?.trim() || null,
+        desiredDeliveryDate: order.desiredDeliveryDate || null,
+        status: order.status,
+        total: Number(order.total),
+        orderNotice: order.orderNotice ?? "",
+      };
+      const response = await apiClient.put(`/api/orders/${order.id}`, payload);
+      if (response.ok) {
+        toast.success("Commande mise à jour avec succès");
+      } else {
+        const err = await response.json().catch(() => ({}));
+        toast.error(err?.details || "Erreur lors de la mise à jour");
       }
-
-      if (!isValidNameOrLastname(order?.lastname)) {
-        toast.error("Format du nom invalide");
-        return;
-      }
-
-      if (order?.email?.trim() && !isValidEmailAddressFormat(order.email)) {
-        toast.error("Format de l'e-mail invalide");
-        return;
-      }
-
-      apiClient.put(`/api/orders/${order?.id}`, order)
-        .then((response) => {
-          if (response.status === 200) {
-            toast.success("Commande mise à jour avec succès");
-          } else {
-            throw Error("Erreur lors de la mise à jour de la commande");
-          }
-        })
-        .catch(() =>
-          toast.error("Erreur lors de la mise à jour de la commande")
-        );
-    } else {
-      toast.error("Veuillez remplir tous les champs obligatoires");
+    } catch {
+      toast.error("Erreur lors de la mise à jour de la commande");
     }
   };
 
   const deleteOrder = async () => {
-    const requestOptions = {
-      method: "DELETE",
-    };
-
-    apiClient.delete(
-      `/api/order-product/${order?.id}`,
-      requestOptions
-    ).then((response) => {
-      apiClient.delete(
-        `/api/orders/${order?.id}`,
-        requestOptions
-      ).then((response) => {
+    if (!order?.id) return;
+    if (!confirm("Supprimer cette commande ? Cette action est irréversible.")) return;
+    try {
+      await apiClient.delete(`/api/order-product/${order.id}`);
+      const res = await apiClient.delete(`/api/orders/${order.id}`);
+      if (res.ok || res.status === 204) {
         toast.success("Commande supprimée avec succès");
         router.push("/admin/orders");
-      });
-    });
+      } else {
+        toast.error("Erreur lors de la suppression");
+      }
+    } catch {
+      toast.error("Erreur lors de la suppression de la commande");
+    }
   };
 
   return (
@@ -197,71 +216,19 @@ const AdminSingleOrder = () => {
               id="order-email"
               type="email"
               className="form-input max-w-xs"
-              value={order?.email}
+              value={order?.email ?? ""}
               onChange={(e) => setOrder({ ...order, email: e.target.value })}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="order-company" className="form-label">Société (optionnel)</label>
-            <input
-              id="order-company"
-              type="text"
-              className="form-input max-w-xs"
-              value={order?.company}
-              onChange={(e) => setOrder({ ...order, company: e.target.value })}
-            />
-          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="form-group">
-              <label htmlFor="order-address" className="form-label">Adresse</label>
-              <input
-                id="order-address"
-                type="text"
-                className="form-input max-w-xs"
-                value={order?.adress}
-                onChange={(e) => setOrder({ ...order, adress: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="order-apartment" className="form-label">Appartement, étage, etc.</label>
-              <input
-                id="order-apartment"
-                type="text"
-                className="form-input max-w-xs"
-                value={order?.apartment}
-                onChange={(e) => setOrder({ ...order, apartment: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="form-group">
-              <label htmlFor="order-city" className="form-label">Ville</label>
-              <input
-                id="order-city"
-                type="text"
-                className="form-input max-w-xs"
-                value={order?.city}
-                onChange={(e) => setOrder({ ...order, city: e.target.value })}
-              />
-            </div>
             <div className="form-group">
               <label htmlFor="order-country" className="form-label">Pays</label>
               <input
                 id="order-country"
                 type="text"
                 className="form-input max-w-xs"
-                value={order?.country}
+                value={order?.country ?? ""}
                 onChange={(e) => setOrder({ ...order, country: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="order-postal" className="form-label">Code postal</label>
-              <input
-                id="order-postal"
-                type="text"
-                className="form-input max-w-xs"
-                value={order?.postalCode ?? ""}
-                onChange={(e) => setOrder({ ...order, postalCode: e.target.value })}
               />
             </div>
             <div className="form-group">
@@ -270,11 +237,25 @@ const AdminSingleOrder = () => {
                 id="order-delivery"
                 type="date"
                 className="form-input max-w-xs"
-                value={order?.desiredDeliveryDate ? order.desiredDeliveryDate.split("T")[0] : ""}
+                value={order?.desiredDeliveryDate ? String(order.desiredDeliveryDate).split("T")[0] : ""}
                 onChange={(e) => setOrder({ ...order, desiredDeliveryDate: e.target.value || null })}
               />
             </div>
           </div>
+          {/* Mesures client : un champ par mesure (lecture seule) */}
+          {(order?.measurements && Object.keys(order.measurements).length > 0) && (
+            <div className="form-group mt-6">
+              <h3 className="text-lg font-semibold text-brand-text-primary mb-3">Mesures client (cm)</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-4 bg-gray-50 rounded-lg">
+                {Object.entries(order.measurements).map(([key, value]) => (
+                  <div key={key}>
+                    <span className="text-sm text-brand-text-secondary block">{MEASURE_LABELS[key] ?? key}</span>
+                    <span className="font-medium text-brand-text-primary">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="form-group">
             <label htmlFor="order-status" className="form-label">Statut de la commande</label>
             <select
@@ -284,23 +265,26 @@ const AdminSingleOrder = () => {
               onChange={(e) =>
                 setOrder({
                   ...order,
-                  status: e.target.value as "processing" | "delivered" | "canceled",
+                  status: e.target.value as Order["status"],
                 })
               }
             >
+              <option value="pending">En attente</option>
               <option value="processing">En cours</option>
+              <option value="shipped">Expédiée</option>
               <option value="delivered">Livrée</option>
-              <option value="canceled">Annulée</option>
+              <option value="cancelled">Annulée</option>
             </select>
           </div>
           <div className="form-group">
-            <label htmlFor="order-notice" className="form-label">Remarque commande</label>
+            <label htmlFor="order-notice" className="form-label">Remarques de la commande</label>
             <textarea
               id="order-notice"
               className="form-textarea max-w-xl h-24"
-              value={order?.orderNotice || ""}
+              value={order?.orderNotice ?? ""}
               onChange={(e) => setOrder({ ...order, orderNotice: e.target.value })}
             />
+            <p className="text-sm text-brand-text-secondary mt-1">Les mesures client sont affichées dans la section « Mesures client » ci-dessus, pas ici.</p>
           </div>
         </div>
         <section className="card card-body" aria-label="Articles de la commande">
