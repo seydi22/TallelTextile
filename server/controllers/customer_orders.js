@@ -258,7 +258,6 @@ async function updateCustomerOrder(request, response) {
       status: validatedData.status,
       city: str(validatedData.city),
       country: str(validatedData.country),
-      desiredDeliveryDate: validatedData.desiredDeliveryDate ?? null,
       orderNotice: validatedData.orderNotice ?? '',
       total: Math.round(Number(validatedData.total)),
     };
@@ -270,7 +269,7 @@ async function updateCustomerOrder(request, response) {
         data: updateData,
       });
     } catch (updateErr) {
-      if (updateErr.message && updateErr.message.includes('Unknown argument') && updateErr.message.includes('measurements')) {
+      if (updateErr.message && updateErr.message.includes('Unknown argument') && updateData.measurements) {
         delete updateData.measurements;
         updatedOrder = await prisma.customer_order.update({
           where: { id: existingOrder.id },
