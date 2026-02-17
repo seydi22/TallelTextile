@@ -26,6 +26,9 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: "Talel Textile",
   description: "Vente de vêtements en ligne",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 // Forcer le rendu dynamique car nous utilisons getServerSession qui nécessite headers()

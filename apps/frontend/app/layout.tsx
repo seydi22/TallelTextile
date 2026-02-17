@@ -21,6 +21,9 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: "Tallel Textile - Boutique en ligne",
   description: "Boutique en ligne de textiles de qualité",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

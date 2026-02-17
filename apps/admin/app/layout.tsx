@@ -20,6 +20,9 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: "Tallel Textile - Administration",
   description: "Dashboard d'administration Tallel Textile",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export const dynamic = 'force-dynamic';
