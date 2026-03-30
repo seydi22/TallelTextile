@@ -11,14 +11,22 @@
 import React from "react";
 import ProductItem from "./ProductItem";
 import Heading from "./Heading";
-import apiClient from '@tallel-textile/shared/lib/api';
 import ProductCarousel from "./ProductCarousel"; // Import the new component
 
 const ProductsSection = async () => {
   let products = [];
   
   try {
-    const data = await apiClient.get("/api/products?limit=8"); // Fetch more products for a better carousel experience
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "").replace(/\/api$/, "") ||
+      (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "");
+
+    const url = `${baseUrl}/api/products?limit=8`;
+
+    const data = await fetch(url, {
+      // Permet à Next.js de mettre en cache et de revalider (ISR)
+      next: { revalidate: 60 },
+    } as any); // `next` n'existe pas dans le type RequestInit standard
     
     if (!data.ok) {
       // Seulement logger en développement

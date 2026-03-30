@@ -1,6 +1,3 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 import {
   Breadcrumb,
   Filters,
@@ -10,6 +7,9 @@ import {
 } from "@/components";
 import React from "react";
 import { sanitize } from "@/lib/sanitize";
+
+// Cache (ISR) pour accélérer le chargement du catalogue
+export const revalidate = 60;
 
 // improve readabillity of category text, for example category text "smart-watches" will be "smart watches"
 const improveCategoryText = (text: string): string => {
